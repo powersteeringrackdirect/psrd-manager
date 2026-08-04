@@ -91,7 +91,7 @@ a{color:var(--accent);text-decoration:none}
 .empty-title{font-size:15px;font-weight:500;color:var(--ink-2)}
 .empty-sub{font-size:13px;color:var(--ink-4)}
 .section{background:var(--bg-1);border:1px solid var(--line);border-radius:var(--r-lg);margin-bottom:12px;overflow:hidden}
-.section-head{padding:14px 18px;display:flex;align-items:center;gap:12px;user-select:none;transition:background .1s;cursor:pointer}
+.section-head{padding:14px var(--pad-sec);display:flex;align-items:center;gap:12px;user-select:none;transition:background .1s;cursor:pointer}
 .section-head:hover{background:var(--bg-2)}
 .section-text{flex:1;min-width:0}
 .section-title{font-size:13px;font-weight:600;letter-spacing:.02em;color:var(--ink);text-transform:uppercase}
@@ -99,10 +99,10 @@ a{color:var(--accent);text-decoration:none}
 .section .chev{color:var(--ink-4);transition:transform .2s;flex-shrink:0}
 .section .chev svg{width:16px;height:16px;display:block}
 .section.open .chev{transform:rotate(90deg)}
-.section-body{padding:4px 18px 18px;display:none}
+.section-body{padding:2px var(--pad-sec) var(--pad-sec);display:none}
 .section.open .section-body{display:block}
-@media(max-width:560px){.section-head{padding:12px 14px}.section-body{padding:4px 14px 14px}}
-.field{margin-bottom:14px}
+
+.field{margin-bottom:var(--s4)}
 .field:last-child{margin-bottom:0}
 .label{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);margin-bottom:6px}
 .label .req{color:var(--accent)}
@@ -114,13 +114,15 @@ input[readonly]{opacity:.55;cursor:default}
 textarea{resize:vertical;min-height:80px;line-height:1.55}
 select{cursor:pointer;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23aeb3bd' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");background-repeat:no-repeat;background-position:right 12px center;padding-right:34px}
 input.mono,textarea.mono{font-family:var(--font-mono);font-size:13px}
-.row{display:grid;gap:12px}
+.row{display:grid;gap:var(--s4);margin-bottom:var(--s4)}
+.row .field{margin-bottom:0}
+.row:last-child{margin-bottom:0}
 .row-2{grid-template-columns:1fr 1fr}
 .row-3{grid-template-columns:repeat(3,1fr)}
 .row-4{grid-template-columns:repeat(4,1fr)}
 @media(max-width:640px){.row-2,.row-3,.row-4{grid-template-columns:1fr}}
-.seg{display:flex;background:var(--bg-2);border:1px solid var(--line);border-radius:var(--r);padding:3px;gap:2px}
-.seg button{flex:1;padding:8px 10px;font-size:12.5px;font-weight:500;color:var(--ink-3);border-radius:5px;transition:background .12s,color .12s}
+.seg{display:flex;background:var(--bg-2);border:1px solid var(--line);border-radius:var(--r);padding:3px;gap:2px;height:42px}
+.seg button{flex:1;padding:0 10px;font-size:13px;font-weight:500;color:var(--ink-3);border-radius:5px;transition:background .12s,color .12s;min-height:0;line-height:1.25}
 .seg button:hover{color:var(--ink)}
 .seg button.is-on{background:var(--bg-3);color:var(--ink);box-shadow:var(--shadow-sm)}
 .seg button.is-on-new{background:var(--ok-w);color:var(--ok)}
@@ -176,20 +178,6 @@ input.mono,textarea.mono{font-family:var(--font-mono);font-size:13px}
 .compat-status.ok{color:var(--ok)}
 .compat-status.warn{color:var(--warn)}
 .compat-status.err{color:var(--err)}
-/* Auto-fill suggestions land here for review instead of overwriting the table. */
-.compat-suggest{background:var(--bg-2);border:1px solid var(--line-2);border-left:3px solid var(--ink-4);border-radius:var(--r);padding:10px 12px;margin-bottom:10px}
-.compat-suggest.conf-high{border-left-color:var(--ok)}
-.compat-suggest.conf-medium{border-left-color:var(--info)}
-.compat-suggest.conf-low{border-left-color:var(--warn)}
-.cs-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px}
-.cs-badge{font-size:10px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-2)}
-.cs-count{font-family:var(--font-mono);font-size:11px;color:var(--ink-3)}
-.cs-rejected{font-family:var(--font-mono);font-size:11px;color:var(--err)}
-.cs-head .btn-link{padding:3px 8px;font-size:11px}
-.cs-rows{display:flex;flex-direction:column;gap:3px}
-.cs-row{display:grid;grid-template-columns:1.6fr 1fr .9fr .5fr;gap:8px;font-size:12px;padding:3px 0;border-top:1px solid var(--line)}
-.cs-row .cs-dim{color:var(--ink-3);font-family:var(--font-mono);font-size:11px}
-@media(max-width:640px){.cs-row{grid-template-columns:1fr 1fr}}
 .btn-rm{width:32px;height:32px;border-radius:var(--r-sm);background:transparent;border:1px solid var(--line);color:var(--ink-4);display:grid;place-items:center;transition:background .12s,color .12s,border-color .12s}
 .btn-rm:hover{background:var(--err-w);color:var(--err);border-color:var(--err)}
 .btn-rm svg{width:14px;height:14px}
@@ -256,11 +244,14 @@ input.mono,textarea.mono{font-family:var(--font-mono);font-size:13px}
 .action-labels{display:none}
 @media(min-width:780px){.action-labels{display:inline}}
 @media(max-width:780px){#publish-status{display:none}#actions{padding:0 12px;gap:6px}.btn{padding:9px 12px;font-size:12.5px}.btn-icon-only{padding:9px;min-width:36px}}
-#scrim{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:80;opacity:0;pointer-events:none;transition:opacity .2s}
-#scrim.is-open{opacity:1;pointer-events:auto}
-/* Mobile breakpoint is 920px everywhere: drawer behaviour and the buttons that
-   open it must flip together, or the sidebar becomes unreachable in between. */
-@media(max-width:920px){#sidebar{position:fixed;top:var(--h-header);left:0;bottom:0;z-index:90;transform:translateX(-100%);transition:transform .25s ease-out;width:min(86vw,340px);box-shadow:var(--shadow-lg)}#sidebar.is-open{transform:translateX(0)}body.list-mode #editor{display:none}}
+/* Below 920px the app is single-pane: the product list and the editor take turns,
+   each filling the whole width. body.list-mode decides which one is showing.
+   (The old off-canvas drawer combined with list-mode could leave BOTH hidden.) */
+@media(max-width:920px){
+  #sidebar{width:100%;border-right:0}
+  body.list-mode #editor{display:none}
+  body:not(.list-mode) #sidebar{display:none}
+}
 @media(min-width:921px){body.list-mode #editor{display:flex}}
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(2px);z-index:200;display:none;align-items:center;justify-content:center;padding:16px}
 .modal-overlay.is-open{display:flex}
@@ -299,19 +290,17 @@ input.mono,textarea.mono{font-family:var(--font-mono);font-size:13px}
 .rule-inner{border:none;border-top:1px solid var(--line);margin:var(--s4) 0;}
 
 /* ── STOCK QTY ROW ──────────────────────────────────────────── */
-#stock-qty-wrap{display:none;flex-direction:column;gap:var(--s2)}
+#stock-qty-wrap{display:none}
+#stock-qty-wrap.show{display:block}
 .qty-row{display:flex;align-items:center;gap:10px}
-.qty-row input{width:120px}
+.qty-row input{width:110px;flex:none}
 
 /* ══════════ DESIGN SYSTEM LAYER (spacing rhythm, mobile, polish) ══════════ */
-:root{--s1:4px;--s2:8px;--s3:12px;--s4:16px;--s5:24px;--s6:32px;--touch:42px}
+:root{--s1:4px;--s2:8px;--s3:12px;--s4:16px;--s5:24px;--s6:32px;--touch:42px;--pad-sec:20px}
+@media(max-width:560px){:root{--pad-sec:14px}}
 #editor{scroll-behavior:smooth}
-#editor-inner{max-width:1080px;margin:0 auto;width:100%}
-.section{margin-bottom:var(--s5)!important;border-radius:10px}
-.section-body{padding:var(--s4) var(--s5)!important}
-.field{margin-bottom:var(--s4)}
-.row{gap:var(--s4)!important}
-.fld-row{gap:var(--s4)!important}
+#editor-inner,#collections-inner{width:100%}
+.section{margin-bottom:var(--s4);border-radius:10px}
 input,select,textarea{min-height:38px}
 button{min-height:34px}
 .btn-row{display:flex;gap:var(--s2);flex-wrap:wrap;align-items:center;margin-top:var(--s3)}
@@ -322,7 +311,7 @@ button{min-height:34px}
    #collections-inner mirrors #editor-inner and #collections-scroll mirrors
    #editor-scroll, so padding, max-width and scrolling are identical. */
 .coll-mode #editor>:not(#collections-inner){display:none!important}
-#collections-inner{display:flex;flex-direction:column;flex:1;min-height:0}
+#collections-inner{display:flex;flex-direction:column;flex:1;min-height:0;width:100%}
 #collections-inner[hidden]{display:none}
 #collections-head{height:56px;flex-shrink:0;border-bottom:1px solid var(--line);background:var(--bg-1);padding:0 16px;display:flex;align-items:center;gap:10px}
 #collections-title{font-size:14px;font-weight:600;color:var(--ink)}
@@ -341,11 +330,10 @@ button{min-height:34px}
 #coll-img-thumb{width:88px;height:88px;border-radius:10px;object-fit:cover;background:var(--bg-3);display:none;flex:none}
 .coll-detail.card{position:sticky;top:var(--s4)}
 @media(max-width:920px){
-  .section-body{padding:var(--s3) var(--s4)!important}
   .row,.row-2,.row-3{grid-template-columns:1fr!important}
   input,select,textarea{font-size:16px}
-  button{min-height:var(--touch)}
-  .seg button{min-height:var(--touch)}
+  .btn,.btn-link,.btn-add,.icon-btn{min-height:var(--touch)}
+  .seg{height:var(--touch)}
   .coll-grid{grid-template-columns:1fr}
   .coll-detail.card{position:static}
   .action-labels{display:none}
@@ -538,12 +526,16 @@ button{min-height:34px}
                   </div>
                 </div>
                 <div class="field">
-                  <label class="label" for="f-parttype">Part type <span class="req">*</span></label>
-                  <select id="f-parttype" onchange="onPartTypeChange(this.value)">
-                    <option value="EPS Rack">EPS Rack</option>
-                    <option value="Steering Rack">Steering Rack</option>
-                    <option value="Steering Column">Steering Column</option>
-                  </select>
+                  <label class="label" for="f-parttype">Part type <span class="req">*</span> <span class="hint">— pick one or type your own</span></label>
+                  <input id="f-parttype" type="text" list="parttype-options" value="Power Steering Rack" oninput="onPartTypeChange(this.value)" onchange="onPartTypeChange(this.value)">
+                  <datalist id="parttype-options">
+                    <option value="Power Steering Rack"></option>
+                    <option value="Electric Power Steering Rack"></option>
+                    <option value="Electric Power Steering (EPS) Rack"></option>
+                    <option value="Power Steering Column"></option>
+                    <option value="Steering Column"></option>
+                    <option value="Steering Gear"></option>
+                  </datalist>
                 </div>
               </div>
               <div class="row row-2">
@@ -721,7 +713,6 @@ button{min-height:34px}
                   </div>
                 </div>
                 <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;align-items:center">
-                  <button class="btn-proc" id="btn-gen-img" onclick="generateFeaturedImage()" style="flex:none">AI Generate Image</button>
                   <label class="btn btn-ghost" style="font-size:12px;padding:8px 12px;cursor:pointer;margin:0" title="Remove background locally in your browser (free, no API), rotate diagonally, center on white 1500×1500, upload">✨ Studio compose<input type="file" accept="image/*" style="display:none" onchange="onStudioFile(event)"></label>
                   <label class="btn btn-ghost" style="font-size:12px;padding:8px 12px;cursor:pointer;margin:0" title="Upload as-is (converted to WebP)">Upload file<input type="file" accept="image/*" style="display:none" onchange="onFeatFile(event)"></label>
                   <input id="feat-url" type="url" placeholder="…or paste image URL" style="flex:1;min-width:170px">
@@ -750,7 +741,6 @@ button{min-height:34px}
                 <button class="btn-link" id="btn-lookup-compat" onclick="lookupCompat()"><svg width="12" height="12"><use href="#i-ai"/></svg> Auto-fill from MPN</button>
                 <span id="compat-status" class="compat-status"></span>
               </div>
-              <div id="compat-suggest" class="compat-suggest" style="display:none"></div>
               <div class="compat-headers"><span>Make</span><span>Model</span><span>Chassis</span><span>Years</span><span>Drive</span><span></span></div>
               <div class="compat-list" id="compat-rows"></div>
               <button class="btn-add" onclick="addCompatRow()"><svg width="12" height="12"><use href="#i-plus"/></svg> Add vehicle</button>
@@ -784,7 +774,6 @@ button{min-height:34px}
               </div>
               <div class="btn-row">
                 <button class="btn-link" onclick="autoSeo(true)"><svg width="12" height="12"><use href="#i-refresh"/></svg> Re-generate</button>
-                <button class="btn-link" id="btn-verify-seo" onclick="verifySeoWithAgent()"><svg width="12" height="12"><use href="#i-ai"/></svg> AI verify</button>
               </div>
             </div>
           </section>
@@ -804,14 +793,12 @@ button{min-height:34px}
   </footer>
 </div><!-- /app -->
 
-<div id="scrim" onclick="closeSidebar()"></div>
 
 <!-- SETTINGS -->
 <div class="modal-overlay" id="settings-modal">
   <div class="modal modal-wide">
     <div class="modal-title">Settings</div>
     <div class="modal-sub">Shop-wide defaults. These feed the badge row on every product page.</div>
-    <div class="field"><label class="label" for="agent-id-input">Agent Studio ID</label><input id="agent-id-input" type="text" class="mono"></div>
     <hr class="rule-inner">
     <div class="row row-3">
       <div class="field"><label class="label" for="f-tax-badge">Tax badge</label><input id="f-tax-badge" type="text" value="NO VAT" oninput="STATE.taxBadge=this.value;renderBadgeEditors()"></div>
@@ -876,13 +863,32 @@ var GHL_BASE='/api/ghl';   // same-origin Worker proxy -> services.leadconnector
 var SITE='https://powersteeringrackdirect.com';
 var RETURNS_URL='https://powersteeringrackdirect.com/returns';
 var WA_URL='https://wa.me/48880705402';
-var AGENT_ID='2ba3de0a-88b5-4a0a-b966-be4947c71c97';
-var AGENT_VERSION_ID='d0819104-c703-4973-bc03-c8c709d3a041';
 
 var BRANDS=['Audi','BMW','Mercedes','Volkswagen','Porsche','Ford','Maserati','Land Rover','Volvo','SEAT','Skoda','Maybach','Bentley','Hyundai','Renault','Fiat','Peugeot','Citroen','Nissan','Toyota','Vauxhall','Opel'];
 var BRAND_TO_COLL={'Audi':'audi','BMW':'bmw','Mercedes':'mercedes','Volkswagen':'volkswagen','Porsche':'porsche','Ford':'ford','Maserati':'maserati','Land Rover':'land-rover','Volvo':'volvo','SEAT':'seat','Skoda':'skoda','Maybach':'maybach','Bentley':'bentley','Hyundai':'hyundai','Renault':'renault','Fiat':'fiat','Peugeot':'peugeot','Citroen':'citroen','Nissan':'nissan','Toyota':'toyota','Vauxhall':'vauxhall','Opel':'opel'};
-var PART_TYPES={'EPS Rack':{spec:'Electric Power Steering (EPS) Rack',short:'EPS Rack',code:'EPS'},'Steering Rack':{spec:'Power Steering Rack',short:'Steering Rack',code:'STR'},'Steering Column':{spec:'Power Steering Column',short:'Steering Column',code:'COL'}};
-var SEO_PART={'EPS Rack':'Electric Power Steering (EPS) Rack','Steering Rack':'Power Steering Rack','Steering Column':'Power Steering Column'};
+var DEFAULT_PART_TYPE='Power Steering Rack';
+// Part type is a free-text combo box. These presets only supply the SKU code and
+// the short label; anything typed in is derived from the text itself.
+var PART_TYPES={
+  'Power Steering Rack':{spec:'Power Steering Rack',short:'Steering Rack',code:'PSR'},
+  'Electric Power Steering Rack':{spec:'Electric Power Steering Rack',short:'EPS Rack',code:'EPS'},
+  'Electric Power Steering (EPS) Rack':{spec:'Electric Power Steering (EPS) Rack',short:'EPS Rack',code:'EPS'},
+  'Power Steering Column':{spec:'Power Steering Column',short:'Steering Column',code:'COL'},
+  'Steering Column':{spec:'Power Steering Column',short:'Steering Column',code:'COL'},
+  'Steering Gear':{spec:'Power Steering Gear',short:'Steering Gear',code:'STG'},
+  'EPS Rack':{spec:'Electric Power Steering (EPS) Rack',short:'EPS Rack',code:'EPS'},
+  'Steering Rack':{spec:'Power Steering Rack',short:'Steering Rack',code:'STR'}
+};
+// Works for presets AND for anything typed by hand.
+function partTypeInfo(val){
+  var v=String(val||'').trim()||DEFAULT_PART_TYPE;
+  if(PART_TYPES[v])return PART_TYPES[v];
+  var words=v.split(/\s+/).filter(function(w){return /[A-Za-z]/.test(w);});
+  var code=words.map(function(w){return w.replace(/[^A-Za-z]/g,'').charAt(0);}).join('').toUpperCase().slice(0,3)||'PRT';
+  return{spec:v,short:v,code:code};
+}
+function partTypeFull(){return partTypeInfo(STATE.partType).spec;}
+function partTypeShort(){return partTypeInfo(STATE.partType).short;}
 var DEFAULT_DESC_USED='Pre-owned, tested unit in good working order. May show minor cosmetic wear or light oxidation from prior use. Photos show the actual item and all included parts.';
 var DEFAULT_DESC_NEW='Brand new genuine OEM unit, never fitted. Direct replacement with no modifications required. Sensor adaptation and wheel alignment may be needed after installation.';
 var DEFAULT_FOOTER_USED="Old rack? No deposit required and no obligation to return your old unit. If you'd like to sell it back to us, we're happy to make you an offer — get in touch for a quote.";
@@ -919,9 +925,9 @@ var PCSS=':root{--pg-ink:#1a1a1a;--pg-ink-2:#4b5160;--pg-ink-3:#6b7280;--pg-ink-
 +'@media(max-width:640px){.pg{padding:16px 14px 40px}.ctas{flex-direction:column}.ctas a{justify-content:center}}';
 
 var STATE={
-  agentId:AGENT_ID,products:[],filtered:[],collections:[],
+  products:[],filtered:[],collections:[],
   current:null,isNew:false,
-  brand:'',model:'',year:'',mpn:'',partType:'EPS Rack',
+  brand:'',model:'',year:'',mpn:'',partType:DEFAULT_PART_TYPE,
   condition:'used',drive:'RHD',
   availableInStore:true,
   collSlug:'',collectionId:null,
@@ -1039,7 +1045,7 @@ window.addEventListener('DOMContentLoaded',function(){
   document.addEventListener('keydown',function(e){
     if((e.metaKey||e.ctrlKey)&&e.key==='z'&&!e.shiftKey){e.preventDefault();undoState();}
     if((e.metaKey||e.ctrlKey)&&(e.key==='y'||(e.key==='z'&&e.shiftKey))){e.preventDefault();redoState();}
-    if(e.key==='Escape') closeSidebar();
+    if(e.key==='Escape'){closeModal('preview-modal');closeModal('settings-modal');}
   });
   // beforeunload warning
   window.addEventListener('beforeunload',function(e){
@@ -1049,12 +1055,22 @@ window.addEventListener('DOMContentLoaded',function(){
 
 // ── SETTINGS ────────────────────────────────────────────────────
 function loadSettings(){
-  STATE.agentId=localStorage.getItem('psrd_agentId')||AGENT_ID;
-  v('agent-id-input',STATE.agentId);
+  try{
+    var st=JSON.parse(localStorage.getItem('psrd_settings')||'{}');
+    if(st.taxBadge)STATE.taxBadge=st.taxBadge;
+    if(st.warrantyMonths!=null)DEFAULT_WARRANTY_USED=parseInt(st.warrantyMonths)||DEFAULT_WARRANTY_USED;
+    if(st.returnsDays!=null)DEFAULT_RETURNS_DAYS=parseInt(st.returnsDays)||DEFAULT_RETURNS_DAYS;
+    if(st.qualityNew)DEFAULT_QUALITY_NEW=st.qualityNew;
+    if(st.qualityUsed)DEFAULT_QUALITY_USED=st.qualityUsed;
+  }catch(e){}
 }
 function saveSettings(){
-  STATE.agentId=gv('agent-id-input')||AGENT_ID;
-  localStorage.setItem('psrd_agentId',STATE.agentId);
+  try{
+    localStorage.setItem('psrd_settings',JSON.stringify({
+      taxBadge:gv('f-tax-badge'),warrantyMonths:gv('f-warranty'),returnsDays:gv('f-returns'),
+      qualityNew:gv('f-quality-new'),qualityUsed:gv('f-quality-used')
+    }));
+  }catch(e){}
   closeModal('settings-modal');toast('Settings saved','ok');
 }
 
@@ -1136,7 +1152,7 @@ function init(){
   setDrive('RHD',false);
   setAvailable(true,true);
   setTrackInventory(false,true);
-  $('f-parttype').value='EPS Rack';STATE.partType='EPS Rack';
+  v('f-parttype',DEFAULT_PART_TYPE);STATE.partType=DEFAULT_PART_TYPE;
   renderBadgeEditors();
   syncBadgeInputs();
   setDirty(false);
@@ -1366,7 +1382,7 @@ function onBrandChange(brand){
 // ── AUTO-GENERATION ─────────────────────────────────────────────
 function buildName(){
   if(!STATE.brand&&!STATE.model&&!STATE.mpn)return '';
-  var pt=PART_TYPES[STATE.partType];
+  var pt=partTypeInfo(STATE.partType);
   var condLabel=STATE.condition==='new'?'New':'Pre-owned';
   // Multi-brand parts (e.g. MQB) — live pattern:
   // "AUDI A3 / VW GOLF / SEAT LEON / SKODA OCTAVIA Electric Power Steering (EPS) Rack …"
@@ -1381,12 +1397,12 @@ function buildName(){
 function buildSku(){
   if(!STATE.mpn)return '';
   var bCode=(STATE.brand||'OEM').toUpperCase().replace(/[\s\-]+/g,'').slice(0,3);
-  var pt=PART_TYPES[STATE.partType];
+  var pt=partTypeInfo(STATE.partType);
   return bCode+'-'+(pt?pt.code:'EPS')+'-'+STATE.mpn+'-'+STATE.drive+'-'+(STATE.condition==='new'?'NEW':'USED');
 }
 function buildGmcAlt(){
   // live featured-media title pattern: "Audi part 8R1423055BG OEM EPS Rack - main view"
-  var ptShort=(PART_TYPES[STATE.partType]&&PART_TYPES[STATE.partType].short)||'EPS Rack';
+  var ptShort=partTypeShort();
   return [STATE.brand,'part',STATE.mpn,'OEM',ptShort,'- main view'].filter(Boolean).join(' ');
 }
 // Single source of truth for seo.keywords AND the image IPTC keywords —
@@ -1809,8 +1825,8 @@ function genId(){
 
 function resetState(){
   STATE.brand='';STATE.model='';STATE.year='';STATE.mpn='';
-  STATE.partType='EPS Rack';STATE.condition='used';STATE.drive='RHD';
-  STATE.availableInStore=true;STATE._driveFromMeta=false;
+  STATE.partType=DEFAULT_PART_TYPE;STATE.condition='used';STATE.drive='RHD';
+  STATE.availableInStore=true;STATE._driveFromMeta=false;STATE._partTypeFromMeta=false;
   STATE.collSlug='';STATE.collectionId=null;
   STATE.collName='';STATE.collImage='';STATE.collSeoTitle='';STATE.collSeoDesc='';
   STATE.customSlug='';STATE.slugLocked=false;STATE.taxBadge='NO VAT';STATE._priceDisplay='';STATE._priceName='';
@@ -1877,7 +1893,7 @@ function populateMetaOnlyFields(meta){
   if(meta.model)     STATE.model     =meta.model;
   if(meta.year)      STATE.year      =String(meta.year);
   if(meta.mpn)       STATE.mpn       =meta.mpn;
-  if(meta.partType)  STATE.partType  =meta.partType;
+  if(meta.partType){ STATE.partType  =meta.partType;STATE._partTypeFromMeta=true;}
   if(meta.condition) STATE.condition =meta.condition;
   if(meta.drive){    STATE.drive     =meta.drive;STATE._driveFromMeta=true;}
   if(Array.isArray(meta.modules))      STATE.modules     =meta.modules.slice();
@@ -2046,10 +2062,12 @@ function fillFromName(name){
   }
   if(/\b(pre.?owned|used)\b/i.test(n))STATE.condition='used';
   else if(/\bnew\b/i.test(n))STATE.condition='new';
-  // part type
-  if(/steering column/i.test(n))STATE.partType='Steering Column';
-  else if(/\(EPS\)|electric power steering/i.test(n))STATE.partType='EPS Rack';
-  else if(/steering rack|steering gear/i.test(n))STATE.partType='Steering Rack';
+  // part type — only when the meta blob didn't supply one
+  if(!STATE._partTypeFromMeta){
+    if(/steering column/i.test(n))STATE.partType='Power Steering Column';
+    else if(/\(EPS\)|electric power steering/i.test(n))STATE.partType='Electric Power Steering (EPS) Rack';
+    else if(/steering rack|steering gear/i.test(n))STATE.partType='Power Steering Rack';
+  }
   // year / range
   if(!STATE.year){
     var ym=n.match(/\b((?:19|20)\d{2}(?:\s*[\u2013\-]\s*(?:(?:19|20)\d{2}|\b))?)/);
@@ -2073,7 +2091,6 @@ function fillFromName(name){
 // ── LOAD PRODUCT ─────────────────────────────────────────────────────────
 async function loadProduct(id){
   if(STATE.dirty&&!confirm('Unsaved changes will be lost. Continue?'))return;
-  dismissCompatSuggestion();
   resetState();
   STATE.current={id:id};
   STATE.isNew=false;
@@ -2203,7 +2220,7 @@ async function loadProduct(id){
   v('f-model',STATE.model);
   v('f-year',STATE.year);
   v('f-mpn',STATE.mpn);
-  var ptEl=$('f-parttype');if(ptEl)ptEl.value=STATE.partType||'EPS Rack';
+  v('f-parttype',STATE.partType||DEFAULT_PART_TYPE);
 
   // Segmented buttons (silent = no dirty flag on init)
   setCondition(STATE.condition,false);
@@ -2309,7 +2326,7 @@ function setTrackInventory(track,silent){
     b.classList.toggle('is-on',b.dataset.v===(track?'on':'off'));
   });
   var wrap=$('stock-qty-wrap');
-  if(wrap)wrap.style.display=track?'flex':'none';
+  if(wrap)wrap.classList.toggle('show',!!track);
   updateStockBadge();
   if(!silent)markChange();
 }
@@ -2335,7 +2352,7 @@ function newProduct(){
   if(STATE.dirty&&!confirm('Unsaved changes will be lost. Continue?'))return;
   STATE.current=null;STATE.isNew=true;STATE.priceId=null;STATE.inventoryId=null;
   STATE._rawProd=null;STATE.collectionIdsAll=[];STATE.seoKeywords='';
-  renderLoadWarnings([]);dismissCompatSuggestion();
+  renderLoadWarnings([]);
   _undoStack.length=0;_redoStack.length=0;
   clearForm();showEditor(true);updateTitle('New product');
   $('publish-status').textContent='New product \u2014 fill in and publish';
@@ -2355,8 +2372,8 @@ function clearForm(){
   STATE.cta2='Fitment check';STATE.cta3='Tech support';
   var bSel=$('f-brand-sel');if(bSel)bSel.value='';
   ['f-model','f-year','f-mpn','f-price','f-seo-title','f-seo-desc','f-slug','f-sku-display','f-price-name','f-stock-qty'].forEach(function(id){v(id,'');});
-  var ptEl=$('f-parttype');if(ptEl)ptEl.value='EPS Rack';
-  STATE.partType='EPS Rack';
+  v('f-parttype',DEFAULT_PART_TYPE);
+  STATE.partType=DEFAULT_PART_TYPE;
   setCondition('used',true);setDrive('RHD',false);
   setAvailable(true,true);setTrackInventory(false,true);
   _compatId=0;STATE.compatRows=[];renderCompatRows();addCompatRow();
@@ -2392,7 +2409,7 @@ function duplicateProduct(){
   _compatId=0;_deliveryId=0;
   var bSel=$('f-brand-sel');if(bSel)bSel.value=STATE.brand;
   v('f-model',STATE.model);v('f-year',STATE.year);v('f-mpn','');v('f-slug','');
-  var ptEl=$('f-parttype');if(ptEl)ptEl.value=STATE.partType;
+  v('f-parttype',STATE.partType||DEFAULT_PART_TYPE);
   setCondition(STATE.condition,false);setDrive(STATE.drive,false);
   v('f-desc-note',STATE.descNote);v('f-footer-note',STATE.footerNote);
   v('f-cta-1',STATE.cta1);v('f-cta-2',STATE.cta2);v('f-cta-3',STATE.cta3);
@@ -2439,7 +2456,6 @@ function enableButtons(on){
   var bU=$('btn-undo'),bR=$('btn-redo');
   if(bU)bU.disabled=_undoStack.length<2;
   if(bR)bR.disabled=!_redoStack.length;
-  var bGI=$('btn-gen-img');if(bGI)bGI.disabled=!on;
 }
 function updateTitle(t){
   var el=$('editor-title');if(!el)return;
@@ -2578,29 +2594,6 @@ function rmCR(id){
   renderCompatRows();markChange();
 }
 
-// ── COMPAT AGENT LOOKUP ─────────────────────────────────────────
-
-// Execute the PSRD agent: current v3 endpoint first; if the production
-// version is empty ("Workflow must have at least one start node") fall back
-// to the legacy endpoint that runs the draft version directly.
-function agentExec(message){
-  return ghlFetch('POST','/agent-studio/agent/'+STATE.agentId+'/execute',{locationId:LOC,message:message})
-    .then(function(r){
-      var raw=r.ok?agentText(r.data):'';
-      var vErr=!r.ok||/start node|isStartNode|no active version|agent not found|not published/i.test(String(raw));
-      if(!vErr)return r;
-      console.warn('[agent] v3 endpoint unusable ('+(r.status||'')+'): '+String(raw||JSON.stringify(r.data)).slice(0,140)+' \u2014 retrying legacy endpoint with versionId');
-      return ghlFetch('POST','/agent-studio/public-api/agents/'+STATE.agentId+'/execute',{locationId:LOC,versionId:AGENT_VERSION_ID,message:message})
-        .then(function(r2){
-          if(r2.ok){
-            var raw2=agentText(r2.data);
-            if(!/start node|isStartNode/i.test(String(raw2)))return r2;
-          }
-          toast('Agent has no published version. In GHL: Agent Studio \u2192 your agent \u2192 add/keep a Start node \u2192 Promote to Production.','err',8000);
-          return r2.ok?r2:r;
-        });
-    });
-}
 function applyFitments(fits,defaultDrive,mode){
   var infer=inferDriveFromMpn(STATE.mpn);
   var rows=fits.map(function(f){
@@ -2623,123 +2616,53 @@ function applyFitments(fits,defaultDrive,mode){
   return rows.length;
 }
 
-// ── SUGGESTION STRIP ────────────────────────────────────────────
-// Auto-fill never silently replaces rows you typed. Anything short of a
-// high-confidence hit into an empty table lands here for you to accept.
-var _compatSuggestion=null;
-var SRC_LABEL={exact:'catalog · exact part number',
-               'cross-ref':'catalog · via cross-reference',
-               platform:'curated platform table',
-               family:'inferred from part-number family',
-               ai:'AI lookup'};
-function _srcKind(source){return String(source||'').split(' ')[0];}
-function renderCompatSuggestion(){
-  var host=$('compat-suggest');if(!host)return;
-  var sg=_compatSuggestion;
-  if(!sg){host.innerHTML='';host.style.display='none';return;}
-  var kind=_srcKind(sg.source);
-  var label=SRC_LABEL[kind]||sg.source;
-  var detail=sg.source.indexOf(' ')>-1?' ('+esc(sg.source.split(' ').slice(1).join(' '))+')':'';
-  host.style.display='block';
-  host.className='compat-suggest conf-'+(sg.confidence||'low');
-  host.innerHTML=
-    '<div class="cs-head">'
-      +'<span class="cs-badge">'+esc(label)+esc(detail)+'</span>'
-      +'<span class="cs-count">'+sg.rows.length+' vehicle'+(sg.rows.length===1?'':'s')+'</span>'
-      +(sg.rejected?'<span class="cs-rejected">'+sg.rejected+' rejected as invalid</span>':'')
-      +'<div style="flex:1"></div>'
-      +'<button class="btn-link" onclick="acceptCompatSuggestion(\'replace\')">Replace table</button>'
-      +'<button class="btn-link" onclick="acceptCompatSuggestion(\'merge\')">Add missing</button>'
-      +'<button class="btn-link" onclick="dismissCompatSuggestion()">Dismiss</button>'
-    +'</div>'
-    +'<div class="cs-rows">'+sg.rows.map(function(r){
-        return '<div class="cs-row"><span>'+esc(r.make)+' '+esc(r.model)+'</span>'
-          +'<span class="cs-dim">'+esc(r.chassis||'—')+'</span>'
-          +'<span class="cs-dim">'+esc(r.years)+'</span>'
-          +'<span class="cs-dim">'+esc(r.drive||'—')+'</span></div>';
-      }).join('')+'</div>';
-}
-function showCompatSuggestion(res,rejected){
-  _compatSuggestion={rows:res.rows,source:res.source,confidence:res.confidence,rejected:rejected||0};
-  renderCompatSuggestion();
-}
-function dismissCompatSuggestion(){_compatSuggestion=null;renderCompatSuggestion();}
-function acceptCompatSuggestion(mode){
-  if(!_compatSuggestion)return;
-  var n=applyFitments(_compatSuggestion.rows,null,mode==='merge'?'merge':'replace');
-  var stat=$('compat-status');
-  if(stat){
-    stat.textContent=n?(mode==='merge'?'Added missing rows':'Table replaced from '+_srcKind(_compatSuggestion.source)):'Nothing new to add';
-    stat.className='compat-status ok';
-  }
-  dismissCompatSuggestion();
-}
-
 function setCompatStatus(text,kind){
   var stat=$('compat-status');if(!stat)return;
   stat.textContent=text||'';
   stat.className='compat-status'+(kind?' '+kind:'');
 }
 
+// Auto-fill is fully deterministic — the shop's own catalog plus a curated
+// platform table. It ALWAYS leaves a usable table behind: if nothing matches the
+// part number, it seeds a row from the Brand / Model / Year / Driver side that
+// are already filled in above, so there is never an empty table to stare at.
 function lookupCompat(auto){
   var mpn=STATE.mpn||gv('f-mpn');
-  if(!mpn){if(!auto)toast('Enter MPN first','err');return;}
-  var btn=$('btn-lookup-compat');
-  var tableEmpty=!STATE.compatRows.some(function(r){return r.make||r.model;});
+  var typed=STATE.compatRows.filter(function(r){return r.make||r.model;});
 
-  // 1) the shop's own catalog + the curated platform table — instant, free, and
-  //    grounded in data that has already been published and checked.
-  var res=resolveFitments(mpn,(STATE.oerefs||[]).concat(STATE.modules||[]));
+  var res=mpn?resolveFitments(mpn,(STATE.oerefs||[]).concat(STATE.modules||[])):null;
   if(res){
-    if(res.confidence==='high'&&tableEmpty){
-      applyFitments(res.rows,null,'replace');
-      setCompatStatus('\u2713 Filled from '+SRC_LABEL[_srcKind(res.source)],'ok');
-    }else{
-      showCompatSuggestion(res,0);
-      setCompatStatus(res.confidence==='high'
-        ?'Match found \u2014 review before applying'
-        :'Suggestion only \u2014 verify model and years','warn');
-    }
+    applyFitments(res.rows,null,typed.length?'merge':'replace');
+    setCompatStatus(SRC_MSG[_srcKind(res.source)]||('Filled from '+res.source),
+                    res.confidence==='high'?'ok':'warn');
     return;
   }
 
-  // 2) agent fallback, for part numbers the catalog has never seen. Its output is
-  //    validated exactly like every other source, so bad rows never reach the table.
-  if(btn)btn.disabled=true;
-  setCompatStatus('Not in catalog \u2014 asking AI\u2026','');
-  agentExec(JSON.stringify({
-      action:'lookup_compatibility',
-      mpn:mpn,brand:STATE.brand,model:STATE.model,year:STATE.year,knownCrossRefs:STATE.oerefs,
-      instruction:'Return ONLY valid JSON with vehicle fitment data for this power steering part MPN. Use real production model names and 4-digit years, e.g. "2011-2017". Format: {"fitments":[{"make":"string","model":"string","years":"string","chassis":"string","drive":"RHD"|"LHD"|"Both"}]}'
-    })).then(function(r){
-    if(btn)btn.disabled=false;
-    if(!r.ok){
-      setCompatStatus('Error '+r.status,'err');
-      var m=(r.data&&(r.data.message||r.data.error))||('HTTP '+r.status);
-      if(!auto)toast('Agent call failed: '+String(m).slice(0,90),'err',5000);
-      console.error('[compat]',r.status,r.data);return;
-    }
-    var raw=agentText(r.data);
-    var parsed=parseAgentJson(raw);
-    if(!parsed){setCompatStatus('No usable data returned','err');if(!auto)toast('No fitment data returned','info');console.error('[compat raw]',raw);return;}
-    var fitments=parsed.fitments||parsed;
-    if(!Array.isArray(fitments)){setCompatStatus('Unexpected response format','err');console.error('[compat raw]',raw);return;}
-    var infer=inferDriveFromMpn(mpn);
-    var valid=[],rejected=0;
-    fitments.forEach(function(f){
-      var row=validateFitmentRow(f,infer||STATE.drive);
-      if(row&&!valid.some(function(x){return _fitRowKey(x)===_fitRowKey(row);}))valid.push(row);
-      else rejected++;
-    });
-    if(!valid.length){
-      setCompatStatus('AI returned '+rejected+' row(s), none valid \u2014 fill in manually','err');
-      console.warn('[compat] all AI rows rejected:',fitments);
-      if(!auto)toast('AI data failed validation \u2014 nothing added','warn',4500);
-      return;
-    }
-    showCompatSuggestion({rows:valid,source:'ai',confidence:'low'},rejected);
-    setCompatStatus('AI suggestion \u2014 verify before applying'+(rejected?' ('+rejected+' rejected)':''),'warn');
-  });
+  if(typed.length){
+    if(!auto)setCompatStatus('No catalog match \u2014 keeping the rows you entered','warn');
+    return;
+  }
+
+  var seeded=seedCompatFromProduct();
+  setCompatStatus(seeded
+    ? 'No catalog match \u2014 started a row from Brand / Model / Year, check it'
+    : 'Fill in Brand, Model and Year range first','warn');
+}
+
+var SRC_MSG={exact:'\u2713 Filled from catalog \u2014 exact part number',
+             'cross-ref':'\u2713 Filled from catalog \u2014 matched a cross-reference',
+             platform:'\u2713 Filled from the platform table',
+             family:'\u26a0 Suggested from the part-number family \u2014 check model and years'};
+function _srcKind(source){return String(source||'').split(' ')[0];}
+
+// Last resort so the table is never left blank.
+function seedCompatFromProduct(){
+  if(!STATE.brand&&!STATE.model)return false;
+  var years=_fitNormYears(STATE.year)||String(STATE.year||'').trim();
+  _compatId=0;STATE.compatRows=[];
+  addCompatRow(STATE.brand||'',STATE.model||'',years,'',STATE.drive,true);
+  renderCompatRows();markChange();
+  return true;
 }
 
 var _compatT=null;
@@ -2750,13 +2673,10 @@ function maybeAutoCompat(){
   if(inf&&inf!==STATE.drive){
     setDrive(inf,false);
     autoName();autoSku();autoSeo();
-    setCompatStatus('Drive '+inf+' decoded from MPN','');
+    setCompatStatus('Driver side '+inf+' decoded from the MPN','');
   }
   if((STATE.mpn||'').length<7)return;
-  _compatT=setTimeout(function(){
-    var hasData=STATE.compatRows.some(function(r){return r.make||r.model;});
-    if(!hasData)lookupCompat(true);
-  },1400);
+  _compatT=setTimeout(function(){lookupCompat(true);},900);
 }
 
 // ── DELIVERY ROWS ────────────────────────────────────────────────
@@ -2781,37 +2701,6 @@ function updDR(id,f,val){var r=STATE.deliveryRows.find(function(x){return x.id==
 function rmDR(id){STATE.deliveryRows=STATE.deliveryRows.filter(function(r){return r.id!==id;});renderDeliveryRows();}
 
 // ── FEATURED IMAGE (AGENT) ───────────────────────────────────────
-function generateFeaturedImage(){
-  var name=buildName()||[STATE.brand,STATE.model,STATE.mpn].filter(Boolean).join(' ');
-  if(!name.trim()){toast('Fill in Brand, Model, MPN first','err');return;}
-  var btn=$('btn-gen-img');
-  if(btn){btn.disabled=true;btn.textContent='Generating\u2026';}
-  var gmcAlt=buildGmcAlt(),iptcKw=buildIptcKeywords();
-  agentExec(JSON.stringify({
-      action:'generate_image',
-      productName:name,mpn:STATE.mpn,brand:STATE.brand,gmcAltText:gmcAlt,
-      instruction:'Generate a 1500x1500px product image. Pure white (#FFFFFF) background. Automotive power steering part placed diagonally from bottom-left to upper-right at ~30 degrees. Part fills ~70% of canvas. Clean studio lighting, no drop shadows, professional ecommerce photography. Return ONLY valid JSON: {"generatedImageUrl":"<url>"}'
-    })).then(function(r){
-    if(btn){btn.disabled=false;btn.textContent='AI Generate Image';}
-    if(!r.ok){
-      var m=(r.data&&(r.data.message||r.data.error))||('HTTP '+r.status);
-      toast('Image agent failed: '+String(m).slice(0,90),'err',5000);console.error(r.status,r.data);return;
-    }
-    var raw=agentText(r.data);
-    var parsed=parseAgentJson(raw);
-    var imgUrl=(parsed&&(parsed.generatedImageUrl||parsed.imageUrl||parsed.image||parsed.url))||findImageUrl(raw);
-    if(!imgUrl){
-      toast('Agent replied but no image URL found — see console','err',5000);
-      console.error('[gen-img raw response]',raw);
-      var fst=$('feat-status');if(fst)fst.textContent='Agent: '+String(raw).slice(0,120);
-      return;
-    }
-    STATE.featImg.url=imgUrl;STATE.featImg.uploadedUrl='';
-    STATE.featImg.gmcAlt=gmcAlt;STATE.featImg.iptcKeywords=iptcKw;
-    renderFeaturedResult();setDirty(true);
-    toast('Image generated \u2014 review and publish','ok',3500);
-  });
-}
 function renderFeaturedResult(){
   var wrap=$('feat-wrap');if(!wrap)return;
   var src=STATE.featImg.uploadedUrl||STATE.featImg.url;
@@ -3009,9 +2898,6 @@ var SEO_TITLE_MAX=70, SEO_DESC_MAX=150;
 function seoModelsShort(){
   return String(STATE.model||'').trim().split(/\s+/).filter(Boolean);
 }
-function seoPartShort(){
-  return (PART_TYPES[STATE.partType]&&PART_TYPES[STATE.partType].short)||'EPS Rack';
-}
 // First year in the Year range field.
 function seoStartYear(){
   var m=String(STATE.year||'').match(/(?:19|20)\d{2}/);
@@ -3022,12 +2908,13 @@ function trimTo(s,max){
   return s.slice(0,max).replace(/[\s,]+\S*$/,'').replace(/[\s,]+$/,'');
 }
 
-// TITLE — [Brand] [MODELS-SHRT] [part-type-short] OEM [MPN] [DRIV-SIDE], <= 70 chars.
-// "Audi Q5 SQ5 EPS Rack OEM 8R1423055BG LHD"
+// TITLE — [MAKE] [MODELS] OEM [PART TYPE IN FULL] [MPN] [YYYY] [DRIVER]
+// "Audi Q5 OEM Electric Power Steering Rack 8R1423055BG 2011 LHD"
 function buildSeoTitle(){
-  var pt=seoPartShort(), models=seoModelsShort().slice();
+  var models=seoModelsShort().slice();
+  var year=seoStartYear();
   function assemble(ms){
-    return [STATE.brand,ms.join(' '),pt,'OEM',STATE.mpn,STATE.drive]
+    return [STATE.brand,ms.join(' '),'OEM',partTypeFull(),STATE.mpn,year||'',STATE.drive]
       .filter(Boolean).join(' ').replace(/\s{2,}/g,' ').trim();
   }
   var t=assemble(models);
@@ -3035,18 +2922,16 @@ function buildSeoTitle(){
   return trimTo(t,SEO_TITLE_MAX);
 }
 
-// DESCRIPTION — Genuine [Brand] part [MPN] OEM [part-type-short]
-//               Cross-ref: [r1, r2, r3] fits [DRIV-SIDE-FULL] models from [yyyy] onwards.
+// DESCRIPTION — Genuine [BRAND] [PART TYPE] for [DRIVER IN FULL] models
+//               from [YYYY] onwards. Ref: [cross-reference / module numbers]
 function buildSeoDesc(){
-  var pt=seoPartShort();
   var side=STATE.drive==='LHD'?'left-hand drive':'right-hand drive';
   var year=seoStartYear();
-  var refs=STATE.oerefs.filter(Boolean).slice(0,3);
+  var refs=(STATE.oerefs||[]).concat(STATE.modules||[]).filter(Boolean);
   function assemble(rs){
-    return 'Genuine '+STATE.brand+' part '+STATE.mpn+' OEM '+pt
-      +(rs.length?' Cross-ref: '+rs.join(', '):'')
-      +' fits '+side+' models'
-      +(year?' from '+year+' onwards':'')+'.';
+    return 'Genuine '+STATE.brand+' '+partTypeFull()+' for '+side+' models'
+      +(year?' from '+year+' onwards':'')+'.'
+      +(rs.length?' Ref: '+rs.join(', '):'');
   }
   var d=assemble(refs);
   while(d.length>SEO_DESC_MAX&&refs.length){refs.pop();d=assemble(refs);}
@@ -3074,41 +2959,13 @@ function charCount(id,countId,max){
   el.textContent=len+' / '+max;
   el.className='char-count'+(len>max?' over':len>max*.85?' warn':'');
 }
-function verifySeoWithAgent(){
-  var btn=$('btn-verify-seo');if(btn)btn.disabled=true;
-  agentExec(JSON.stringify({
-      action:'verify_seo',
-      productName:buildName(),mpn:STATE.mpn,brand:STATE.brand,model:STATE.model,
-      year:STATE.year,currentSeoTitle:gv('f-seo-title'),currentSeoDesc:gv('f-seo-desc'),
-      instruction:'Improve SEO for UK automotive Google Shopping. Title max 70 chars, description max 150 chars. Return ONLY valid JSON: {"seoTitle":"string","seoDescription":"string","reasoning":"string"}'
-    })).then(function(r){
-    if(btn)btn.disabled=false;
-    if(!r.ok){
-      var m=(r.data&&(r.data.message||r.data.error))||('HTTP '+r.status);
-      toast('SEO agent failed: '+String(m).slice(0,90),'err',5000);console.error(r.status,r.data);return;
-    }
-    var raw=agentText(r.data);
-    var parsed=parseAgentJson(raw);
-    if(!parsed){toast('Could not parse response','err');return;}
-    if(parsed.seoTitle){v('f-seo-title',trimTo(parsed.seoTitle,SEO_TITLE_MAX));STATE.seoTitle=trimTo(parsed.seoTitle,SEO_TITLE_MAX);charCount('f-seo-title','cc-title',SEO_TITLE_MAX);}
-    if(parsed.seoDescription){v('f-seo-desc',trimTo(parsed.seoDescription,SEO_DESC_MAX));STATE.seoDesc=trimTo(parsed.seoDescription,SEO_DESC_MAX);charCount('f-seo-desc','cc-desc',SEO_DESC_MAX);}
-    updateSeoPreview();
-    if(parsed.reasoning)toast('Agent: '+parsed.reasoning.slice(0,90),'info',5000);
-    setDirty(true);
-  });
-}
-
 
 // ── RENDER PRODUCT HTML ──────────────────────────────────────────────────
 // ── LIVE-PATTERN DESCRIPTION FRAGMENT ─────────────────────────────
 // This is EXACTLY the HTML structure of the 129 live PSRD products.
 // The full-page version below is ONLY for the preview modal.
 function liveTitleTail(){
-  var base;
-  if(STATE.partType==='Steering Column')base='Power Steering Column';
-  else if(STATE.partType==='Steering Rack')base='Power Steering Rack';
-  else base='Electric Power Steering Rack';
-  return [STATE.brand,'OEM',STATE.mpn,base].filter(Boolean).join(' ')+(STATE.drive==='LHD'?' LHD':'');
+  return [STATE.brand,'OEM',STATE.mpn,partTypeFull()].filter(Boolean).join(' ')+(STATE.drive==='LHD'?' LHD':'');
 }
 function entText(s){
   return esc(String(s==null?'':s))
@@ -3479,25 +3336,15 @@ function closeModal(id){
 }
 
 // ── SIDEBAR / MOBILE ───────────────────────────────────────────────────────
-function toggleSidebar(){
-  var sb=$('sidebar'),sc=$('scrim');
-  if(sb)sb.classList.toggle('is-open');
-  if(sc)sc.classList.toggle('is-open');
-}
-function closeSidebar(){
-  var sb=$('sidebar'),sc=$('scrim');
-  if(sb)sb.classList.remove('is-open');
-  if(sc)sc.classList.remove('is-open');
-}
-function showEditorMobile(){
-  if(window.innerWidth<=920){
-    document.body.classList.remove('list-mode');
-    closeSidebar();
-  }
-}
-function showList(){
-  document.body.classList.add('list-mode');
-}
+function isMobile(){return window.innerWidth<=920;}
+function toggleSidebar(){if(isMobile())document.body.classList.toggle('list-mode');}
+function closeSidebar(){if(isMobile())document.body.classList.remove('list-mode');}
+function showEditorMobile(){if(isMobile())document.body.classList.remove('list-mode');}
+function showList(){if(isMobile())document.body.classList.add('list-mode');}
+// Never leave the phone showing neither pane after a rotate or resize.
+window.addEventListener('resize',function(){
+  if(!isMobile())document.body.classList.remove('list-mode');
+});
 
 // ── UNDO / REDO ────────────────────────────────────────────────────────────
 // Only editable product fields are snapshotted. STATE.images is excluded on
@@ -3568,8 +3415,7 @@ function repopulateForm(){
   v('f-model',STATE.model);
   v('f-year',STATE.year);
   v('f-mpn',STATE.mpn);
-  var ptEl=$('f-parttype');
-  if(ptEl)ptEl.value=STATE.partType||'EPS Rack';
+  v('f-parttype',STATE.partType||DEFAULT_PART_TYPE);
   setCondition(STATE.condition,false);
   setDrive(STATE.drive,false);
   setAvailable(STATE.availableInStore,true);
