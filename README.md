@@ -41,39 +41,44 @@ Never edit the `APP_HTML` literal in `psrd-worker.js` by hand — `build.js` ove
 |---|---|
 | `GET /` | the app |
 | `POST /api/login` | verifies the gate password against `APP_PASS` |
-| `GET /api/fetch?url=…` | server-side image fetch, for agent-generated URLs (no CORS) |
+| `GET /api/fetch?url=…` | server-side image fetch, so pasted image URLs aren't blocked by CORS |
 | `* /api/ghl/<path>` | proxied to `services.leadconnectorhq.com` with auth headers injected |
 
 Everything under `/api/` except `/api/login` requires the `X-PSRD-Key` header.
 
 ## How the app decides things
 
-**SEO** is generated from the product fields and the compatibility table:
+**SEO** is generated from the product fields only — deliberately not from the compatibility
+table, so editing fitments can never rewrite your listing:
 
-- Title — `[Brand] [models] [part-type-short] OEM [MPN] [RHD|LHD]`, capped at 70 characters.
-  Models come from the compatibility rows (falling back to the Model field) and are dropped
-  from the end until the title fits.
-- Description — `Genuine [Brand] part [MPN] OEM [part-type-short] Cross-ref: [r1, r2, r3] fits
-  [left|right]-hand drive models from [yyyy] onwards.`, capped at 150 characters. The start
-  year is the earliest across the compatibility rows.
+- Title — `[Make] [Models] OEM [Part type in full] [MPN] [yyyy] [RHD|LHD]`, capped at 70
+  characters. Models come from the Model field and are dropped from the end until it fits.
+- Description — `Genuine [Brand] [Part type] for [left|right]-hand drive models from [yyyy]
+  onwards. Ref: [cross-references and module numbers]`, capped at 150 characters.
+  Reference numbers are dropped from the end until it fits.
 
 Editing either field by hand sets `seoManual` and the generator stops overwriting it;
 **Re-generate** resumes automatic mode.
 
-**Vehicle compatibility** auto-fill resolves in confidence order and never silently
-overwrites rows you typed:
+**Vehicle compatibility** auto-fill is fully deterministic — no AI — and always leaves the
+table populated. It resolves in confidence order and never discards rows you typed:
 
 1. `exact` — this part number is already in the catalog
 2. `cross-ref` — one of this product's own OE numbers is in the catalog
 3. `platform` — the hand-curated `PLATFORM_DB` table, keyed by part-number family
 4. `family` — inferred from catalog siblings sharing a family prefix
-5. AI agent — last resort
+5. seed — a single row built from Brand / Model / Year, flagged for you to check
 
-The catalog index is built from every product's `psrd-meta` JSON blob (falling back to
-scraping the rendered compatibility table for older products) and cached in `localStorage`
-for 24 hours. Every row from every source — including the agent — must pass
-`validateFitmentRow()`: a known make, a real 4-digit year or year range, a plausible model,
-and a valid drive side. Rows that fail are dropped and reported, never inserted.
+The catalog index is built in the background by reading each product individually (GHL's
+list endpoint omits `description`), preferring the structured compatibility rows and falling
+back to scraping the rendered table for older products. It is cached in `localStorage` for
+24 hours. Every row from every source must pass `validateFitmentRow()`: a known make, a real
+4-digit year or year range, a plausible model, and a valid drive side. Rows that fail are
+dropped and reported, never inserted.
 
-Anything short of a high-confidence hit into an empty table lands in a review strip with
-**Replace table** / **Add missing** / **Dismiss**.
+Compatibility feeds nothing else — not the product name, not the SKU, not the SEO fields.
+
+**SKU** is your product feed ID, so the app treats it as the product's identity rather than
+something to regenerate. On an existing product it is read from the GHL price record and
+shown locked; publishing does **not** send it back unless you unlock the field and change it
+yourself. New products and duplicates get a freshly generated, editable SKU.

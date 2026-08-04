@@ -165,7 +165,9 @@ input.mono,textarea.mono{font-family:var(--font-mono);font-size:13px}
 .lw-head .btn-link{padding:2px 8px;font-size:11px}
 .lw-list{margin:0;padding-left:18px;font-size:12.5px;color:var(--ink-2);line-height:1.6}
 /* Collection picker + its "New collection" button, in Core data */
-.coll-field{display:flex;gap:8px;align-items:stretch}
+.sku-field,.coll-field{display:flex;gap:8px;align-items:stretch}
+.sku-field input{flex:1;min-width:0}
+.sku-field .btn{white-space:nowrap;font-size:11px;padding:6px 10px}
 .coll-field select{flex:1;min-width:0}
 .coll-field .btn{white-space:nowrap}
 @media(max-width:560px){.coll-field{flex-direction:column}}
@@ -495,8 +497,11 @@ button{min-height:34px}
                   <select id="f-brand-sel" onchange="onBrandChange(this.value)"></select>
                 </div>
                 <div class="field">
-                  <label class="label" for="f-sku-display">SKU <span class="hint">— from GHL, or auto-generated for new products</span></label>
-                  <input id="f-sku-display" type="text" class="mono" placeholder="auto from Brand, Part type and MPN" oninput="STATE.sku=this.value.trim();markChange()">
+                  <label class="label" for="f-sku-display">SKU <span class="hint">— feed ID · never changes once published</span></label>
+                  <div class="sku-field">
+                    <input id="f-sku-display" type="text" class="mono" placeholder="auto from Brand, Part type and MPN" oninput="onSkuInput(this.value)">
+                    <button class="btn btn-ghost" type="button" id="btn-sku-lock" style="display:none" title="The SKU is your product feed ID. Changing it breaks the feed entry for this product." onclick="toggleSkuLock()">🔒 Locked</button>
+                  </div>
                 </div>
               </div>
               <div class="row row-2">
@@ -932,7 +937,7 @@ var STATE={
   products:[],filtered:[],collections:[],
   current:null,isNew:false,
   brand:'',model:'',year:'',mpn:'',partType:DEFAULT_PART_TYPE,
-  qualityBadge:'',driveBadge:'',sku:'',
+  qualityBadge:'',driveBadge:'',sku:'',_loadedSku:'',skuEdited:false,skuLocked:true,
   condition:'used',drive:'RHD',
   availableInStore:true,
   collSlug:'',collectionId:null,
@@ -1383,6 +1388,23 @@ function buildName(){
 function currentSku(){
   return (STATE.sku&&STATE.sku.trim())||buildSku();
 }
+function onSkuInput(val){
+  STATE.sku=String(val||'').trim();
+  STATE.skuEdited=true;
+  markChange();
+}
+function toggleSkuLock(){
+  STATE.skuLocked=!STATE.skuLocked;
+  syncSkuLockUi();
+}
+function syncSkuLockUi(){
+  var inp=$('f-sku-display'),btn=$('btn-sku-lock');
+  var existing=!STATE.isNew&&!!(STATE.sku&&STATE.sku.trim());
+  if(btn)btn.style.display=existing?'inline-flex':'none';
+  if(btn)btn.textContent=STATE.skuLocked?'🔒 Locked':'🔓 Editable';
+  if(inp)inp.readOnly=!!(existing&&STATE.skuLocked);
+  if(inp)inp.style.opacity=(existing&&STATE.skuLocked)?'0.6':'1';
+}
 function buildSku(){
   if(!STATE.mpn)return '';
   var bCode=(STATE.brand||'OEM').toUpperCase().replace(/[\s\-]+/g,'').slice(0,3);
@@ -1816,7 +1838,7 @@ function resetState(){
   STATE.brand='';STATE.model='';STATE.year='';STATE.mpn='';
   STATE.partType=DEFAULT_PART_TYPE;STATE.condition='used';STATE.drive='RHD';
   STATE.availableInStore=true;STATE._driveFromMeta=false;STATE._partTypeFromMeta=false;
-  STATE.qualityBadge='';STATE.driveBadge='';STATE.sku='';
+  STATE.qualityBadge='';STATE.driveBadge='';STATE.sku='';STATE._loadedSku='';STATE.skuEdited=false;STATE.skuLocked=true;
   STATE.collSlug='';STATE.collectionId=null;
   STATE.collName='';STATE.collImage='';STATE.collSeoTitle='';STATE.collSeoDesc='';
   STATE.customSlug='';STATE.slugLocked=false;STATE.taxBadge='NO VAT';STATE._priceDisplay='';STATE._priceName='';
@@ -1826,7 +1848,7 @@ function resetState(){
   STATE.footerNote=DEFAULT_FOOTER_USED;
   STATE.warrantyMonths=DEFAULT_WARRANTY_USED;STATE.returnsDays=DEFAULT_RETURNS_DAYS;
   STATE.modules=[];STATE.oerefs=[];STATE.productTags=[];
-  STATE.qualityBadge='';STATE.driveBadge='';STATE.taxBadge='NO VAT';STATE.sku='';
+  STATE.qualityBadge='';STATE.driveBadge='';STATE.taxBadge='NO VAT';STATE.sku='';STATE._loadedSku='';STATE.skuEdited=false;STATE.skuLocked=true;
   STATE.compatRows=[];STATE.deliveryRows=[];STATE.images=[];
   STATE.featImg={url:'',uploadedUrl:'',mediaId:'',gmcAlt:'',iptcKeywords:[]};
   STATE.seoTitle='';STATE.seoDesc='';STATE.seoKeywords='';STATE.seoManual=false;
@@ -2175,6 +2197,8 @@ async function loadProduct(id){
       STATE._priceDisplay  =fp.amount!=null?String(fp.amount):'';
       STATE._priceName     =fp.name||'';
       STATE.sku            =fp.sku||'';        // the real SKU on the price record
+      STATE._loadedSku     =fp.sku||'';        // remembered so publish can leave it alone
+      STATE.skuLocked      =!!fp.sku;
       STATE.trackInventory =!!fp.trackInventory;
       STATE.stockQty       =typeof fp.availableQuantity==='number'?fp.availableQuantity:(parseInt(fp.availableQuantity)||0);
     } else {
@@ -2252,7 +2276,7 @@ async function loadProduct(id){
   syncBadgeInputs();
 
   // Tags, chips, tables, images
-  syncCollectionSelect();
+  syncCollectionSelect();syncSkuLockUi();
   renderTags('modules');
   renderTags('oerefs');
   renderTags('productTags');
@@ -2351,6 +2375,8 @@ function newProduct(){
 function clearForm(){
   STATE.brand='';STATE.model='';STATE.year='';STATE.mpn='';
   STATE.customSlug='';STATE._prevAutoSlug='';STATE._priceDisplay='';
+  // The SKU is the feed ID of one specific product — never let it carry over.
+  STATE.sku='';STATE._loadedSku='';STATE.skuEdited=false;STATE.skuLocked=false;
   syncCollectionSelect();
   STATE.modules=[];STATE.oerefs=[];STATE.productTags=[];
   STATE.compatRows=[];STATE.images=[];
@@ -2369,7 +2395,7 @@ function clearForm(){
   _compatId=0;STATE.compatRows=[];renderCompatRows();addCompatRow();
   renderImageGrid();renderFeaturedResult();
   v('f-tax-badge',STATE.taxBadge||'NO VAT');
-  syncSlugLockUi();
+  syncSlugLockUi();syncSkuLockUi();
   _deliveryId=0;
   STATE.deliveryRows=DEFAULT_DELIVERY.map(function(r){return Object.assign({},r,{id:++_deliveryId});});
   renderDeliveryRows();
@@ -2396,6 +2422,9 @@ function duplicateProduct(){
   STATE._rawProd=null;STATE.collectionIdsAll=[];STATE.seoKeywords='';
   Object.assign(STATE,snap);
   STATE.mpn='';STATE.customSlug='';STATE._prevAutoSlug='';
+  // A duplicate is a different product, so it needs its own feed ID.
+  STATE.sku='';STATE._loadedSku='';STATE.skuEdited=false;STATE.skuLocked=false;
+  v('f-sku-display','');
   _compatId=0;_deliveryId=0;
   var bSel=$('f-brand-sel');if(bSel)bSel.value=STATE.brand;
   v('f-model',STATE.model);v('f-year',STATE.year);v('f-mpn','');v('f-slug','');
@@ -2410,7 +2439,7 @@ function duplicateProduct(){
   renderTags('modules');renderTags('oerefs');renderTags('productTags');
   renderCompatRows();renderDeliveryRows();renderImageGrid();renderBadgeEditors();
   charCount('f-seo-title','cc-title',SEO_TITLE_MAX);charCount('f-seo-desc','cc-desc',SEO_DESC_MAX);
-  updateSeoPreview();updateAutoPreview();
+  updateSeoPreview();updateAutoPreview();syncSkuLockUi();
   showEditor(true); // true = new mode: slug editable
   var pill=$('mode-pill');if(pill){pill.textContent='Copy';pill.className='mode-pill dup';}
   updateTitle('Duplicate: '+snap.brand+' '+snap.model);
@@ -3232,17 +3261,19 @@ async function publishProduct(){
   // STEP 4: price \u2014 stock tracking lives ON the price record in GHL
   // (correct endpoint is /products/{id}/price \u2014 singular)
   $('pub-sub').textContent='Saving price\u2026';
+  // Never resend the SKU on an update — it is the feed ID and GHL already has it.
   var sku=currentSku();
+  var sendSku=STATE.isNew||!STATE._loadedSku||STATE.skuEdited;
   var pricePayload={
     name:name,
     type:'one_time',
     currency:'GBP',
     amount:price,
     locationId:LOC,
-    sku:sku,
     trackInventory:!!STATE.trackInventory,
     allowOutOfStockPurchases:false
   };
+  if(sendSku&&sku)pricePayload.sku=sku;
   if(STATE.trackInventory)pricePayload.availableQuantity=STATE.stockQty||0;
   var priceErr=null;
   try{
