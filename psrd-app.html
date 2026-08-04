@@ -134,7 +134,7 @@ input.mono,textarea.mono{font-family:var(--font-mono);font-size:13px}
 .tag{display:inline-flex;align-items:center;gap:6px;background:var(--bg-3);border:1px solid var(--line-2);border-radius:var(--r-sm);padding:3px 4px 3px 9px;font-family:var(--font-mono);font-size:12px}
 .tag button{width:18px;height:18px;border-radius:4px;color:var(--ink-4);font-size:14px;display:grid;place-items:center;transition:background .1s,color .1s}
 .tag button:hover{background:var(--err-w);color:var(--err)}
-.tag-input{flex:1;min-width:120px;background:transparent;border:0;outline:0;padding:4px 6px;font-family:var(--font-mono);font-size:12.5px;color:var(--ink)}
+.tag-input{flex:1;min-width:120px;background:transparent;border:0;outline:0;padding:4px 6px;font-family:var(--font-mono);font-size:13px;color:var(--ink)}
 .tag-input::placeholder{color:var(--ink-4);font-family:var(--font-sans);font-style:italic}
 .badge-preview{background:var(--bg-2);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;display:flex;flex-wrap:wrap;gap:7px}
 .badge-preview-row{display:flex;flex-wrap:wrap;gap:7px}
@@ -151,13 +151,11 @@ input.mono,textarea.mono{font-family:var(--font-mono);font-size:13px}
 .sw-pink{background:rgba(244,114,182,.13);color:#f472b6;border-color:rgba(244,114,182,.32)}
 .compat-list{display:flex;flex-direction:column;gap:8px}
 .compat-row{display:grid;grid-template-columns:1fr 1.4fr 1fr .7fr .7fr 34px;gap:6px;align-items:center}
-.compat-row input,.compat-row select{padding:7px 9px;font-size:12.5px}
-.compat-row select{padding-right:28px;background-position:right 8px center}
+.compat-row select{padding-right:34px}
 .compat-headers{display:grid;grid-template-columns:1fr 1.4fr 1fr .7fr .7fr 34px;gap:6px;padding:0 4px;font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-4)}
 @media(max-width:780px){.compat-headers{display:none}.compat-row{grid-template-columns:1fr 1fr;gap:8px;padding:12px;background:var(--bg-2);border:1px solid var(--line);border-radius:var(--r)}}
 .delivery-row{display:grid;grid-template-columns:1fr 1fr 1fr 1fr 34px;gap:6px;align-items:center}
 .delivery-headers{display:grid;grid-template-columns:1fr 1fr 1fr 1fr 34px;gap:6px;padding:0 4px;font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-4)}
-.delivery-row input{padding:7px 9px;font-size:12.5px}
 @media(max-width:780px){.delivery-headers{display:none}.delivery-row{grid-template-columns:1fr 1fr;gap:8px;padding:12px;background:var(--bg-2);border:1px solid var(--line);border-radius:var(--r)}}
 /* Collected load warnings — one strip, not a queue of toasts. */
 #load-warnings{background:var(--accent-w);border:1px solid rgba(232,169,81,.3);border-radius:var(--r);padding:10px 14px;margin-bottom:var(--s4)}
@@ -173,6 +171,7 @@ input.mono,textarea.mono{font-family:var(--font-mono);font-size:13px}
 .badge-note{font-size:11.5px;color:var(--ink-4);line-height:1.55;margin-top:8px}
 .badge-note strong{color:var(--ink-2);font-weight:600}
 .cta-hint{font-size:11px;color:var(--ink-4);font-style:italic;margin-top:5px}
+.name-preview{background:var(--bg-2);border:1px solid var(--line);border-radius:var(--r);padding:10px 12px;font-size:13.5px;line-height:1.45;color:var(--ink);min-height:38px;display:flex;align-items:center}
 .compat-status{font-size:11.5px;color:var(--ink-3);font-family:var(--font-mono)}
 .compat-status.ok{color:var(--ok)}
 .compat-status.warn{color:var(--warn)}
@@ -212,7 +211,7 @@ input.mono,textarea.mono{font-family:var(--font-mono);font-size:13px}
 .img-card.featured::after{content:"\2605 Featured";position:absolute;top:6px;left:6px;font-size:10px;font-weight:600;background:var(--accent);color:#1a1206;padding:2px 8px;border-radius:var(--r-pill)}
 .img-thumb{display:block;width:100%;aspect-ratio:4/3;object-fit:cover}
 .img-body{padding:8px}
-.img-alt{width:100%;background:var(--bg-3);border:1px solid var(--line);border-radius:var(--r-sm);padding:5px 8px;font-size:11.5px;color:var(--ink);margin-bottom:4px}
+.img-alt{width:100%;background:var(--bg-3);border:1px solid var(--line);border-radius:var(--r-sm);padding:6px 8px;font-size:12.5px;color:var(--ink);margin-bottom:4px}
 .upload-status{font-family:var(--font-mono);font-size:10px;color:var(--ink-4);min-height:13px;margin-bottom:4px}
 .upload-status.ok{color:var(--ok)}
 .upload-status.warn{color:var(--warn)}
@@ -228,13 +227,11 @@ input.mono,textarea.mono{font-family:var(--font-mono);font-size:13px}
 .gmc-alt-label{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);margin-bottom:4px}
 .iptc-tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px}
 .iptc-tag{font-size:10px;font-weight:500;padding:2px 8px;background:var(--violet-w);color:var(--violet);border:1px solid rgba(177,135,232,.25);border-radius:var(--r-pill)}
+.seo-url{font-family:var(--font-mono);font-size:12px;color:var(--ink-3);word-break:break-all;padding:10px 12px;background:var(--bg-2);border:1px solid var(--line);border-radius:var(--r);min-height:38px;display:flex;align-items:center}
+.seo-url span{color:var(--ok)}
 .char-count{text-align:right;font-family:var(--font-mono);font-size:11px;color:var(--ink-4);margin-top:4px}
 .char-count.warn{color:var(--warn)}
 .char-count.over{color:var(--err)}
-.seo-preview{background:var(--bg);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;margin-top:12px}
-.seo-preview-url{font-family:var(--font-mono);font-size:11.5px;color:var(--ok);margin-bottom:3px}
-.seo-preview-title{font-size:16px;color:var(--info);margin-bottom:3px}
-.seo-preview-desc{font-size:12.5px;color:var(--ink-3);line-height:1.45}
 .btn-link{background:transparent;border:1px dashed var(--line-2);border-radius:var(--r-sm);padding:5px 10px;color:var(--ink-3);font-size:12px;transition:color .12s,border-color .12s;cursor:pointer;display:inline-flex;align-items:center;gap:4px}
 .btn-link:hover{color:var(--accent);border-color:var(--accent)}
 .btn-link:disabled{opacity:.4;cursor:not-allowed}
@@ -320,7 +317,7 @@ button{min-height:34px}
 .btn-row{display:flex;gap:var(--s2);flex-wrap:wrap;align-items:center;margin-top:var(--s3)}
 .card{background:var(--bg-2);border:1px solid var(--line);border-radius:10px;padding:var(--s4);margin-bottom:var(--s4)}
 .dim-note{padding:var(--s4);text-align:center;color:var(--ink-4);font-size:12.5px}
-.hint{font-weight:400;font-size:10.5px;color:var(--ink-4);letter-spacing:0;text-transform:none}
+.hint{font-weight:400;font-size:11px;color:var(--ink-4);letter-spacing:0;text-transform:none}
 /* Collections mode — same canvas as the product editor, not a floating panel.
    #collections-inner mirrors #editor-inner and #collections-scroll mirrors
    #editor-scroll, so padding, max-width and scrolling are identical. */
@@ -574,12 +571,9 @@ button{min-height:34px}
                 </div>
               </div>
 
-              <!-- Auto-generated name / SKU / slug preview -->
-              <div class="field" style="background:var(--bg-2);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;margin-bottom:0">
-                <div style="font-size:13.5px;font-weight:500;color:var(--ink);margin-bottom:4px;line-height:1.4" id="auto-name-preview">—</div>
-                <div style="font-family:var(--font-mono);font-size:11px;color:var(--ink-3)" id="auto-sku-preview"></div>
-                <div style="font-size:11px;color:var(--ink-4);margin-top:2px" id="auto-coll-preview"></div>
-                <div style="font-family:var(--font-mono);font-size:11px;color:var(--ok);margin-top:5px;word-break:break-all" id="slug-preview"></div>
+              <div class="field" style="margin-bottom:0">
+                <label class="label">Product name <span class="hint">— auto, this is what the store shows</span></label>
+                <div class="name-preview" id="auto-name-preview">—</div>
               </div>
             </div>
           </section>
@@ -673,7 +667,7 @@ button{min-height:34px}
               <div class="field">
                 <label class="label">Top badges <span class="hint">— read-only · populated from product details</span></label>
                 <div class="badge-preview" id="badge-preview-row"></div>
-                <div class="badge-note">Auto-populated from <strong>Condition</strong> &amp; <strong>Driver side</strong> in <strong>Core data</strong>. Edit those to change these badges, or open <strong>Badges &amp; ribbons</strong> to change the wording.</div>
+                <div class="badge-note">Auto-populated from <strong>Condition</strong> &amp; <strong>Driver side</strong> in <strong>Core data</strong>. Wording and durations live in <strong>Settings</strong>.</div>
               </div>
               <div class="row row-3">
                 <div class="field">
@@ -702,7 +696,7 @@ button{min-height:34px}
 
           <!-- 6. DELIVERY & RETURNS -->
           <section class="section open" id="sec-delivery">
-            <header class="section-head" onclick="toggleSection('sec-delivery')"><div class="section-text"><div class="section-title">Delivery &amp; Returns</div><div class="section-sub">Rates per zone · transit windows</div></div><span class="chev"><svg><use href="#i-chev"/></svg></span></header>
+            <header class="section-head" onclick="toggleSection('sec-delivery')"><div class="section-text"><div class="section-title">Delivery &amp; returns</div><div class="section-sub">Rates per zone · transit windows</div></div><span class="chev"><svg><use href="#i-chev"/></svg></span></header>
             <div class="section-body">
               <div class="delivery-headers"><span>Zone</span><span>Rate</span><span>Handling</span><span>Transit</span><span></span></div>
               <div class="compat-list" id="delivery-rows"></div>
@@ -712,7 +706,7 @@ button{min-height:34px}
 
           <!-- 7. IMAGES -->
           <section class="section open" id="sec-images">
-            <header class="section-head" onclick="toggleSection('sec-images')"><div class="section-text"><div class="section-title">Product Media</div><div class="section-sub">Featured image = 1500×1500 WebP</div></div><span class="chev"><svg><use href="#i-chev"/></svg></span></header>
+            <header class="section-head" onclick="toggleSection('sec-images')"><div class="section-text"><div class="section-title">Images</div><div class="section-sub">Featured image = 1500×1500 WebP</div></div><span class="chev"><svg><use href="#i-chev"/></svg></span></header>
             <div class="section-body">
               <div class="field">
                 <label class="label">Featured image <span class="hint">1500×1500 · white background · becomes the GHL product image</span></label>
@@ -750,7 +744,7 @@ button{min-height:34px}
 
           <!-- 8. VEHICLE COMPATIBILITY -->
           <section class="section open" id="sec-compat">
-            <header class="section-head" onclick="toggleSection('sec-compat')"><div class="section-text"><div class="section-title">Vehicle Compatibility</div><div class="section-sub">Vehicles this part fits · feeds the product name and SEO</div></div><span class="chev"><svg><use href="#i-chev"/></svg></span></header>
+            <header class="section-head" onclick="toggleSection('sec-compat')"><div class="section-text"><div class="section-title">Vehicle compatibility</div><div class="section-sub">Vehicles this part fits · shown as a table on the product page</div></div><span class="chev"><svg><use href="#i-chev"/></svg></span></header>
             <div class="section-body">
               <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
                 <button class="btn-link" id="btn-lookup-compat" onclick="lookupCompat()"><svg width="12" height="12"><use href="#i-ai"/></svg> Auto-fill from MPN</button>
@@ -765,7 +759,7 @@ button{min-height:34px}
 
           <!-- 9. SEARCH ENGINE LISTING -->
           <section class="section" id="sec-seo">
-            <header class="section-head" onclick="toggleSection('sec-seo')"><div class="section-text"><div class="section-title">Search Engine Listing</div><div class="section-sub">Auto-generated from Core data, Numbers and Vehicle compatibility</div></div><span class="chev"><svg><use href="#i-chev"/></svg></span></header>
+            <header class="section-head" onclick="toggleSection('sec-seo')"><div class="section-text"><div class="section-title">Search engine listing</div><div class="section-sub">Auto-generated from Core data and Numbers</div></div><span class="chev"><svg><use href="#i-chev"/></svg></span></header>
             <div class="section-body">
               <div class="field">
                 <label class="label" for="f-seo-title">SEO title <span class="hint">≤70 chars</span></label>
@@ -784,48 +778,17 @@ button{min-height:34px}
                   <input class="tag-input" id="productTags-input" placeholder="Enter + press Return" onkeydown="handleTagKey(event,'productTags')">
                 </div>
               </div>
-              <div class="seo-preview">
-                <div class="seo-preview-url">powersteeringrackdirect.com › product-details › <span id="seo-slug-preview" style="color:var(--ok)"></span></div>
-                <div class="seo-preview-title" id="seo-pt">—</div>
-                <div class="seo-preview-desc" id="seo-pd">—</div>
+              <div class="field">
+                <label class="label">Store URL</label>
+                <div class="seo-url">powersteeringrackdirect.com › product-details › <span id="seo-slug-preview"></span></div>
               </div>
-              <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
-                <button class="btn btn-ghost" style="font-size:12px;padding:7px 12px" onclick="autoSeo(true)"><svg><use href="#i-refresh"/></svg> Re-generate</button>
-                <button class="btn btn-ghost" id="btn-verify-seo" style="font-size:12px;padding:7px 12px" onclick="verifySeoWithAgent()"><svg><use href="#i-ai"/></svg> AI verify</button>
+              <div class="btn-row">
+                <button class="btn-link" onclick="autoSeo(true)"><svg width="12" height="12"><use href="#i-refresh"/></svg> Re-generate</button>
+                <button class="btn-link" id="btn-verify-seo" onclick="verifySeoWithAgent()"><svg width="12" height="12"><use href="#i-ai"/></svg> AI verify</button>
               </div>
             </div>
           </section>
 
-          <!-- 10. BADGES & RIBBONS -->
-          <section class="section" id="sec-badges">
-            <header class="section-head" onclick="toggleSection('sec-badges')"><div class="section-text"><div class="section-title">Badges &amp; ribbons</div><div class="section-sub">Wording and durations behind the read-only badge row</div></div><span class="chev"><svg><use href="#i-chev"/></svg></span></header>
-            <div class="section-body">
-              <div class="row row-3">
-                <div class="field">
-                  <label class="label" for="f-tax-badge">Tax badge</label>
-                  <input id="f-tax-badge" type="text" value="NO VAT" oninput="STATE.taxBadge=this.value;renderBadgeEditors();markChange()">
-                </div>
-                <div class="field">
-                  <label class="label" for="f-warranty">Warranty <span class="hint">months</span></label>
-                  <input id="f-warranty" type="number" min="0" max="60" step="1" value="6" oninput="STATE.warrantyMonths=parseInt(this.value)||0;renderBadgeEditors();autoSeo();markChange()">
-                </div>
-                <div class="field">
-                  <label class="label" for="f-returns">Returns <span class="hint">days</span></label>
-                  <input id="f-returns" type="number" min="0" max="365" step="1" value="14" oninput="STATE.returnsDays=parseInt(this.value)||0;markChange()">
-                </div>
-              </div>
-              <div class="row row-2">
-                <div class="field">
-                  <label class="label" for="f-quality-new">Quality badge <span class="hint">New OEM</span></label>
-                  <input id="f-quality-new" type="text" placeholder="OEM Quality" oninput="DEFAULT_QUALITY_NEW=this.value;renderBadgeEditors();markChange()">
-                </div>
-                <div class="field">
-                  <label class="label" for="f-quality-used">Quality badge <span class="hint">Pre-owned</span></label>
-                  <input id="f-quality-used" type="text" placeholder="Tested &amp; Inspected" oninput="DEFAULT_QUALITY_USED=this.value;renderBadgeEditors();markChange()">
-                </div>
-              </div>
-            </div>
-          </section>
         </div><!-- /editor-scroll -->
       </div><!-- /editor-inner -->
     </main>
@@ -845,10 +808,20 @@ button{min-height:34px}
 
 <!-- SETTINGS -->
 <div class="modal-overlay" id="settings-modal">
-  <div class="modal">
-    <div class="modal-title">Agent configuration</div>
-    <div class="modal-sub">Override Agent ID if needed.</div>
+  <div class="modal modal-wide">
+    <div class="modal-title">Settings</div>
+    <div class="modal-sub">Shop-wide defaults. These feed the badge row on every product page.</div>
     <div class="field"><label class="label" for="agent-id-input">Agent Studio ID</label><input id="agent-id-input" type="text" class="mono"></div>
+    <hr class="rule-inner">
+    <div class="row row-3">
+      <div class="field"><label class="label" for="f-tax-badge">Tax badge</label><input id="f-tax-badge" type="text" value="NO VAT" oninput="STATE.taxBadge=this.value;renderBadgeEditors()"></div>
+      <div class="field"><label class="label" for="f-warranty">Warranty <span class="hint">months</span></label><input id="f-warranty" type="number" min="0" max="60" step="1" value="6" oninput="STATE.warrantyMonths=parseInt(this.value)||0;renderBadgeEditors()"></div>
+      <div class="field"><label class="label" for="f-returns">Returns <span class="hint">days</span></label><input id="f-returns" type="number" min="0" max="365" step="1" value="14" oninput="STATE.returnsDays=parseInt(this.value)||0"></div>
+    </div>
+    <div class="row row-2">
+      <div class="field"><label class="label" for="f-quality-new">Quality badge <span class="hint">New OEM</span></label><input id="f-quality-new" type="text" placeholder="OEM Quality" oninput="DEFAULT_QUALITY_NEW=this.value;renderBadgeEditors()"></div>
+      <div class="field"><label class="label" for="f-quality-used">Quality badge <span class="hint">Pre-owned</span></label><input id="f-quality-used" type="text" placeholder="Tested &amp; Inspected" oninput="DEFAULT_QUALITY_USED=this.value;renderBadgeEditors()"></div>
+    </div>
     <div class="modal-btns"><button class="btn btn-ghost" onclick="closeModal('settings-modal')">Cancel</button><button class="btn btn-primary" onclick="saveSettings()">Save</button></div>
   </div>
 </div>
@@ -1471,14 +1444,9 @@ function updateAutoPreview(){
     STATE._prevAutoSlug=autoSlugVal;
   }
   var activeSlug=STATE.customSlug||autoSlugVal;
-  var np=$('auto-name-preview'),sp=$('auto-sku-preview'),cp=$('auto-coll-preview');
-  var slPrev=$('slug-preview'),seoSlug=$('seo-slug-preview');
-  var skuEl=$('f-sku-display');
-  if(np)np.textContent=name||'\u2014 fill in Brand, Model, MPN above';
-  if(sp)sp.textContent=sku?'SKU: '+sku:'';
-  if(cp)cp.textContent=STATE.collSlug?'Collection: '+STATE.collSlug:'';
+  var np=$('auto-name-preview'),seoSlug=$('seo-slug-preview'),skuEl=$('f-sku-display');
+  if(np)np.textContent=name||'\u2014 fill in Brand, Model and MPN';
   if(skuEl)skuEl.value=sku||'';
-  if(slPrev)slPrev.textContent=activeSlug?SITE+'/product-details/'+activeSlug:'';
   if(seoSlug)seoSlug.textContent=activeSlug||'\u2026';
   // price name = product name (readonly display)
   var pn=$('f-price-name');if(pn)pn.value=name||'';
@@ -1742,13 +1710,14 @@ function resolveFitments(mpn,crossRefs){
 function refreshProducts(){
   $('prod-list').innerHTML='<div style="padding:24px;text-align:center;color:var(--ink-4)"><div class="spinner" style="margin:0 auto 8px"></div><br>Loading\u2026</div>';
   $('list-count').textContent='\u2014';
-  FITDB.byPn={};FITDB.byPrefix={};FITDB.count=0;   // rebuild the index from scratch, don't merge into stale data
   var all=[],offset=0;
   function fetchBatch(){
     ghlFetch('GET','/products/?locationId='+LOC+'&limit=100&offset='+offset).then(function(r){
       if(!r.ok){toast('Failed to load products','err');setStatus('Error',false);return;}
       var batch=r.data.products||[];
-      batch.forEach(function(p){try{_fitIngestDesc(p.description||'');}catch(e){console.warn('[fitdb]',e);}});
+      // The list endpoint may or may not carry descriptions. Use them when present;
+      // buildFitIndex() fetches the rest.
+      batch.forEach(function(p){if(p.description)try{_fitIngestDesc(p.description);}catch(e){console.warn('[fitdb]',e);}});
       all=all.concat(batch.map(function(p){
         return{id:p._id||p.id,name:p.name||'',slug:p.slug||'',availableInStore:p.availableInStore!==false};
       }));
@@ -1757,13 +1726,55 @@ function refreshProducts(){
         $('list-count').textContent=all.length;
         renderProductList();
         setStatus('Connected \u2014 '+all.length+' products',true);
-        saveFitDb();
-        console.log('[fitdb] indexed '+FITDB.count+' products, '+Object.keys(FITDB.byPn).length+' part numbers');
+        buildFitIndex();
       } else {offset+=100;fetchBatch();}
     });
   }
   fetchBatch();
 }
+
+// ── CATALOG INDEX BUILDER ───────────────────────────────────────
+// GHL's product LIST response does not include the description, which is where
+// the fitment data lives — so the index has to read each product individually.
+// That is slow to do on every load, so it runs once in the background and the
+// result is cached for 24h; afterwards auto-fill is instant and offline.
+var _fitIndexing=false;
+function buildFitIndex(force){
+  if(_fitIndexing)return;
+  if(!force&&FITDB.count>=STATE.products.length&&FITDB.count>0)return;   // cache already covers the catalog
+  var todo=STATE.products.map(function(p){return p.id;}).filter(Boolean);
+  if(!todo.length)return;
+  _fitIndexing=true;
+  var done=0,i=0,CONCURRENCY=4;
+  function tick(){
+    var pct=Math.round(done/todo.length*100);
+    setStatus('Indexing fitments \u2014 '+pct+'%',true);
+  }
+  function next(){
+    if(i>=todo.length)return Promise.resolve();
+    var id=todo[i++];
+    return ghlFetch('GET','/products/'+id+'?locationId='+LOC).then(function(r){
+      if(r.ok){
+        var prod=r.data.product||r.data;
+        if(prod&&prod.description){try{_fitIngestDesc(prod.description);}catch(e){}}
+      }
+      done++;
+      if(done%10===0){tick();saveFitDb();}
+      return next();
+    });
+  }
+  tick();
+  var workers=[];
+  for(var w=0;w<CONCURRENCY;w++)workers.push(next());
+  Promise.all(workers).then(function(){
+    _fitIndexing=false;
+    FITDB.count=done;
+    saveFitDb();
+    setStatus('Connected \u2014 '+STATE.products.length+' products',true);
+    console.log('[fitdb] indexed '+done+' products, '+Object.keys(FITDB.byPn).length+' part numbers, '+Object.keys(FITDB.byPrefix).length+' families');
+  });
+}
+
 function filterProducts(){
   var q=gv('search').toLowerCase();
   STATE.filtered=q?STATE.products.filter(function(p){
@@ -2537,7 +2548,7 @@ function addCompatRow(make,model,years,platform,drive,silent){
   STATE.compatRows.push({id:++_compatId,make:make||'',model:model||'',years:years||'',
                          platform:platform||'',drive:drive||STATE.drive});
   if(silent)return;
-  renderCompatRows();autoName();autoSeo();markChange();
+  renderCompatRows();markChange();
 }
 function renderCompatRows(){
   var el=$('compat-rows');if(!el)return;
@@ -2560,11 +2571,11 @@ function updCR(id,f,val){
   var r=STATE.compatRows.find(function(x){return x.id===id;});
   if(!r)return;
   r[f]=val;
-  autoName();autoSeo();markChange();
+  markChange();
 }
 function rmCR(id){
   STATE.compatRows=STATE.compatRows.filter(function(r){return r.id!==id;});
-  renderCompatRows();autoName();autoSeo();markChange();
+  renderCompatRows();markChange();
 }
 
 // ── COMPAT AGENT LOOKUP ─────────────────────────────────────────
@@ -2608,7 +2619,7 @@ function applyFitments(fits,defaultDrive,mode){
     _compatId=0;STATE.compatRows=[];
     rows.forEach(function(r){addCompatRow(r.make,r.model,r.years,r.chassis,r.drive,true);});
   }
-  renderCompatRows();autoName();autoSeo();markChange();
+  renderCompatRows();markChange();
   return rows.length;
 }
 
@@ -2993,29 +3004,18 @@ function rmImg(i){
 // ── SEO ────────────────────────────────────────────────────────
 var SEO_TITLE_MAX=70, SEO_DESC_MAX=150;
 
-// Unique model names from the compatibility table (the parts really do fit several
-// models), falling back to the Model field while the table is still empty.
+// The Model field, split into words so an over-long title can shed the tail.
+// Deliberately independent of the compatibility table.
 function seoModelsShort(){
-  var out=[];
-  STATE.compatRows.forEach(function(r){
-    var m=String(r.model||'').trim();
-    if(m&&out.indexOf(m)<0)out.push(m);
-  });
-  if(!out.length&&STATE.model)out.push(String(STATE.model).trim());
-  return out;
+  return String(STATE.model||'').trim().split(/\s+/).filter(Boolean);
 }
 function seoPartShort(){
   return (PART_TYPES[STATE.partType]&&PART_TYPES[STATE.partType].short)||'EPS Rack';
 }
-// Earliest model year across the compat rows, else from the Year range field.
+// First year in the Year range field.
 function seoStartYear(){
-  var min=null;
-  STATE.compatRows.forEach(function(r){
-    var m=String(r.years||'').match(/(?:19|20)\d{2}/);
-    if(m){var y=parseInt(m[0],10);if(!min||y<min)min=y;}
-  });
-  if(!min){var m2=String(STATE.year||'').match(/(?:19|20)\d{2}/);if(m2)min=parseInt(m2[0],10);}
-  return min;
+  var m=String(STATE.year||'').match(/(?:19|20)\d{2}/);
+  return m?parseInt(m[0],10):null;
 }
 function trimTo(s,max){
   if(s.length<=max)return s;
@@ -3065,9 +3065,7 @@ function autoSeo(force){
 }
 function updateSeoPreview(){
   STATE.seoTitle=gv('f-seo-title');STATE.seoDesc=gv('f-seo-desc');
-  var pt=$('seo-pt'),pd=$('seo-pd'),sl=$('seo-slug-preview');
-  if(pt)pt.textContent=STATE.seoTitle||'\u2014';
-  if(pd)pd.textContent=STATE.seoDesc||'\u2014';
+  var sl=$('seo-slug-preview');
   if(sl)sl.textContent=STATE.customSlug||slugify(buildName())||'\u2026';
 }
 function charCount(id,countId,max){
