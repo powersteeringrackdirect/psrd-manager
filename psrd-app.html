@@ -111,7 +111,7 @@ input[type=text],input[type=number],input[type=url],input[type=password],input[t
 input:focus,textarea:focus,select:focus{border-color:var(--accent);background:var(--bg-3)}
 input::placeholder,textarea::placeholder{color:var(--ink-4)}
 input[readonly]{opacity:.55;cursor:default}
-textarea{resize:vertical;min-height:80px;line-height:1.55}
+textarea{resize:vertical;min-height:84px;line-height:1.55}
 select{cursor:pointer;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23aeb3bd' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");background-repeat:no-repeat;background-position:right 12px center;padding-right:34px}
 input.mono,textarea.mono{font-family:var(--font-mono);font-size:13px}
 .row{display:grid;gap:var(--s4);margin-bottom:var(--s4)}
@@ -393,7 +393,6 @@ button{min-height:34px}
     <div class="brand"><div class="brand-mark">P</div><div class="brand-text">PSRD<span class="muted">/ Product Manager</span></div></div>
     <div class="header-right">
       <div class="status" id="status-wrap"><span class="status-dot"></span><span class="status-text" id="status-text">Loading…</span></div>
-      <button class="icon-btn" onclick="openModal('settings-modal')" aria-label="Settings"><svg><use href="#i-settings"/></svg></button>
       <button class="icon-btn" onclick="refreshProducts()" aria-label="Refresh"><svg><use href="#i-refresh"/></svg></button>
     </div>
   </header>
@@ -496,8 +495,8 @@ button{min-height:34px}
                   <select id="f-brand-sel" onchange="onBrandChange(this.value)"></select>
                 </div>
                 <div class="field">
-                  <label class="label" for="f-sku-display">SKU <span class="hint">— auto, pushed to the GHL price record</span></label>
-                  <input id="f-sku-display" type="text" class="mono" readonly tabindex="-1" placeholder="set Brand, Part type and MPN">
+                  <label class="label" for="f-sku-display">SKU <span class="hint">— from GHL, or auto-generated for new products</span></label>
+                  <input id="f-sku-display" type="text" class="mono" placeholder="auto from Brand, Part type and MPN" oninput="STATE.sku=this.value.trim();markChange()">
                 </div>
               </div>
               <div class="row row-2">
@@ -646,20 +645,44 @@ button{min-height:34px}
             <header class="section-head" onclick="toggleSection('sec-desc')"><div class="section-text"><div class="section-title">Description note</div><div class="section-sub">Condition note on product page · switches with New / Pre-owned</div></div><span class="chev"><svg><use href="#i-chev"/></svg></span></header>
             <div class="section-body">
               <div class="field" style="margin-bottom:0">
+                <label class="label" for="f-desc-note">Description note <span class="hint">— condition-specific · auto-fills on toggle</span></label>
                 <textarea id="f-desc-note" rows="3" oninput="STATE.descNote=this.value;markChange()"></textarea>
-                <button class="btn-link" style="margin-top:6px" onclick="resetDescNote()">↻ Reset default for current condition</button>
+                <div class="btn-row"><button class="btn-link" onclick="resetDescNote()">↻ Reset default for current condition</button></div>
               </div>
             </div>
           </section>
 
           <!-- 5. PAGE CONTENT -->
           <section class="section open" id="sec-content">
-            <header class="section-head" onclick="toggleSection('sec-content')"><div class="section-text"><div class="section-title">Page content</div><div class="section-sub">CTAs &amp; footer note · badges auto-populate from condition / drive</div></div><span class="chev"><svg><use href="#i-chev"/></svg></span></header>
+            <header class="section-head" onclick="toggleSection('sec-content')"><div class="section-text"><div class="section-title">Page content</div><div class="section-sub">Top badges, CTAs and the footer note</div></div><span class="chev"><svg><use href="#i-chev"/></svg></span></header>
             <div class="section-body">
               <div class="field">
-                <label class="label">Top badges <span class="hint">— read-only · populated from product details</span></label>
+                <label class="label">Top badges <span class="hint">— shown across the top of the product page</span></label>
                 <div class="badge-preview" id="badge-preview-row"></div>
-                <div class="badge-note">Auto-populated from <strong>Condition</strong> &amp; <strong>Driver side</strong> in <strong>Core data</strong>. Wording and durations live in <strong>Settings</strong>.</div>
+              </div>
+              <div class="row row-3">
+                <div class="field">
+                  <label class="label" for="f-tax-badge">Tax badge</label>
+                  <input id="f-tax-badge" type="text" placeholder="NO VAT" oninput="STATE.taxBadge=this.value;renderBadgeEditors();markChange()">
+                </div>
+                <div class="field">
+                  <label class="label" for="f-warranty">Warranty <span class="hint">— months</span></label>
+                  <input id="f-warranty" type="number" min="0" max="60" step="1" oninput="STATE.warrantyMonths=parseInt(this.value)||0;renderBadgeEditors();markChange()">
+                </div>
+                <div class="field">
+                  <label class="label" for="f-returns">Returns <span class="hint">— days</span></label>
+                  <input id="f-returns" type="number" min="0" max="365" step="1" oninput="STATE.returnsDays=parseInt(this.value)||0;markChange()">
+                </div>
+              </div>
+              <div class="row row-2">
+                <div class="field">
+                  <label class="label" for="f-quality-badge">Quality badge</label>
+                  <input id="f-quality-badge" type="text" placeholder="Tested &amp; Inspected" oninput="STATE.qualityBadge=this.value;renderBadgeEditors();markChange()">
+                </div>
+                <div class="field">
+                  <label class="label" for="f-drive-badge">Driver-side badge</label>
+                  <input id="f-drive-badge" type="text" placeholder="RHD" oninput="STATE.driveBadge=this.value;renderBadgeEditors();markChange()">
+                </div>
               </div>
               <div class="row row-3">
                 <div class="field">
@@ -680,8 +703,8 @@ button{min-height:34px}
               </div>
               <div class="field" style="margin-bottom:0">
                 <label class="label" for="f-footer-note">Footer note <span class="hint">— condition-specific · auto-fills on toggle</span></label>
-                <textarea id="f-footer-note" rows="2" oninput="STATE.footerNote=this.value;markChange()"></textarea>
-                <button class="btn-link" style="margin-top:6px" onclick="resetFooterNote()">↻ Reset default for current condition</button>
+                <textarea id="f-footer-note" rows="3" oninput="STATE.footerNote=this.value;markChange()"></textarea>
+                <div class="btn-row"><button class="btn-link" onclick="resetFooterNote()">↻ Reset default for current condition</button></div>
               </div>
             </div>
           </section>
@@ -793,25 +816,6 @@ button{min-height:34px}
   </footer>
 </div><!-- /app -->
 
-
-<!-- SETTINGS -->
-<div class="modal-overlay" id="settings-modal">
-  <div class="modal modal-wide">
-    <div class="modal-title">Settings</div>
-    <div class="modal-sub">Shop-wide defaults. These feed the badge row on every product page.</div>
-    <hr class="rule-inner">
-    <div class="row row-3">
-      <div class="field"><label class="label" for="f-tax-badge">Tax badge</label><input id="f-tax-badge" type="text" value="NO VAT" oninput="STATE.taxBadge=this.value;renderBadgeEditors()"></div>
-      <div class="field"><label class="label" for="f-warranty">Warranty <span class="hint">months</span></label><input id="f-warranty" type="number" min="0" max="60" step="1" value="6" oninput="STATE.warrantyMonths=parseInt(this.value)||0;renderBadgeEditors()"></div>
-      <div class="field"><label class="label" for="f-returns">Returns <span class="hint">days</span></label><input id="f-returns" type="number" min="0" max="365" step="1" value="14" oninput="STATE.returnsDays=parseInt(this.value)||0"></div>
-    </div>
-    <div class="row row-2">
-      <div class="field"><label class="label" for="f-quality-new">Quality badge <span class="hint">New OEM</span></label><input id="f-quality-new" type="text" placeholder="OEM Quality" oninput="DEFAULT_QUALITY_NEW=this.value;renderBadgeEditors()"></div>
-      <div class="field"><label class="label" for="f-quality-used">Quality badge <span class="hint">Pre-owned</span></label><input id="f-quality-used" type="text" placeholder="Tested &amp; Inspected" oninput="DEFAULT_QUALITY_USED=this.value;renderBadgeEditors()"></div>
-    </div>
-    <div class="modal-btns"><button class="btn btn-ghost" onclick="closeModal('settings-modal')">Cancel</button><button class="btn btn-primary" onclick="saveSettings()">Save</button></div>
-  </div>
-</div>
 
 <!-- PREVIEW -->
 <div class="modal-overlay" id="preview-modal">
@@ -928,6 +932,7 @@ var STATE={
   products:[],filtered:[],collections:[],
   current:null,isNew:false,
   brand:'',model:'',year:'',mpn:'',partType:DEFAULT_PART_TYPE,
+  qualityBadge:'',driveBadge:'',sku:'',
   condition:'used',drive:'RHD',
   availableInStore:true,
   collSlug:'',collectionId:null,
@@ -1045,7 +1050,7 @@ window.addEventListener('DOMContentLoaded',function(){
   document.addEventListener('keydown',function(e){
     if((e.metaKey||e.ctrlKey)&&e.key==='z'&&!e.shiftKey){e.preventDefault();undoState();}
     if((e.metaKey||e.ctrlKey)&&(e.key==='y'||(e.key==='z'&&e.shiftKey))){e.preventDefault();redoState();}
-    if(e.key==='Escape'){closeModal('preview-modal');closeModal('settings-modal');}
+    if(e.key==='Escape')closeModal('preview-modal');
   });
   // beforeunload warning
   window.addEventListener('beforeunload',function(e){
@@ -1054,26 +1059,6 @@ window.addEventListener('DOMContentLoaded',function(){
 });
 
 // ── SETTINGS ────────────────────────────────────────────────────
-function loadSettings(){
-  try{
-    var st=JSON.parse(localStorage.getItem('psrd_settings')||'{}');
-    if(st.taxBadge)STATE.taxBadge=st.taxBadge;
-    if(st.warrantyMonths!=null)DEFAULT_WARRANTY_USED=parseInt(st.warrantyMonths)||DEFAULT_WARRANTY_USED;
-    if(st.returnsDays!=null)DEFAULT_RETURNS_DAYS=parseInt(st.returnsDays)||DEFAULT_RETURNS_DAYS;
-    if(st.qualityNew)DEFAULT_QUALITY_NEW=st.qualityNew;
-    if(st.qualityUsed)DEFAULT_QUALITY_USED=st.qualityUsed;
-  }catch(e){}
-}
-function saveSettings(){
-  try{
-    localStorage.setItem('psrd_settings',JSON.stringify({
-      taxBadge:gv('f-tax-badge'),warrantyMonths:gv('f-warranty'),returnsDays:gv('f-returns'),
-      qualityNew:gv('f-quality-new'),qualityUsed:gv('f-quality-used')
-    }));
-  }catch(e){}
-  closeModal('settings-modal');toast('Settings saved','ok');
-}
-
 // ── GHL API ─────────────────────────────────────────────────────
 function authKey(){return sessionStorage.getItem('psrd_key')||'';}
 
@@ -1146,7 +1131,6 @@ function uploadBlobToGhl(blob,fileName){
 
 // ── INIT ────────────────────────────────────────────────────────
 function init(){
-  loadSettings();
   buildBrandSelect();
   setCondition('used',false);    // false = silent, no defaults text, no dirty
   setDrive('RHD',false);
@@ -1394,6 +1378,11 @@ function buildName(){
           :[STATE.brand,STATE.model].filter(Boolean).join(' ');
   return [head,STATE.year,pt?pt.spec:'',STATE.mpn,STATE.drive,condLabel].filter(Boolean).join(' ');
 }
+// An existing product keeps the SKU stored on its GHL price record. buildSku()
+// is only a proposal, used for new products or when GHL has none.
+function currentSku(){
+  return (STATE.sku&&STATE.sku.trim())||buildSku();
+}
 function buildSku(){
   if(!STATE.mpn)return '';
   var bCode=(STATE.brand||'OEM').toUpperCase().replace(/[\s\-]+/g,'').slice(0,3);
@@ -1448,7 +1437,7 @@ function resetSlug(){
   updateAutoPreview();
 }
 function updateAutoPreview(){
-  var name=buildName(),sku=buildSku();
+  var name=buildName(),sku=currentSku();
   var autoSlugVal=slugify(name);
   // on new products, auto-set slug field if user hasn't typed a custom one
   var slugEl=$('f-slug');
@@ -1540,9 +1529,9 @@ function _fitPush(bucket,rows){
 }
 
 // ── CATALOG INGEST ──────────────────────────────────────────────
-// Priority 1: the psrd-meta JSON blob this app embeds in every product it
-// publishes — structured, typed and exact. Priority 2: scrape the rendered
-// table, for legacy products that predate the blob.
+// Products published before this change carry a psrd-meta JSON blob; read it when
+// present. Everything else is scraped from the rendered compatibility table, which
+// is what newly published products rely on.
 function _fitRowsFromMeta(meta){
   if(!meta||!Array.isArray(meta.compatRows))return null;
   var rows=meta.compatRows.map(function(r){
@@ -1827,6 +1816,7 @@ function resetState(){
   STATE.brand='';STATE.model='';STATE.year='';STATE.mpn='';
   STATE.partType=DEFAULT_PART_TYPE;STATE.condition='used';STATE.drive='RHD';
   STATE.availableInStore=true;STATE._driveFromMeta=false;STATE._partTypeFromMeta=false;
+  STATE.qualityBadge='';STATE.driveBadge='';STATE.sku='';
   STATE.collSlug='';STATE.collectionId=null;
   STATE.collName='';STATE.collImage='';STATE.collSeoTitle='';STATE.collSeoDesc='';
   STATE.customSlug='';STATE.slugLocked=false;STATE.taxBadge='NO VAT';STATE._priceDisplay='';STATE._priceName='';
@@ -1836,6 +1826,7 @@ function resetState(){
   STATE.footerNote=DEFAULT_FOOTER_USED;
   STATE.warrantyMonths=DEFAULT_WARRANTY_USED;STATE.returnsDays=DEFAULT_RETURNS_DAYS;
   STATE.modules=[];STATE.oerefs=[];STATE.productTags=[];
+  STATE.qualityBadge='';STATE.driveBadge='';STATE.taxBadge='NO VAT';STATE.sku='';
   STATE.compatRows=[];STATE.deliveryRows=[];STATE.images=[];
   STATE.featImg={url:'',uploadedUrl:'',mediaId:'',gmcAlt:'',iptcKeywords:[]};
   STATE.seoTitle='';STATE.seoDesc='';STATE.seoKeywords='';STATE.seoManual=false;
@@ -1877,7 +1868,7 @@ function parseHtmlMetaOnly(html){
     populateMetaOnlyFields(meta);
     return;
   }
-  // Fallback: read structure from DOM (old products without psrd-meta tag)
+  // Read the structure back out of the rendered page
   try{
     var doc=(new DOMParser()).parseFromString(html,'text/html');
     populateMetaOnlyFromDoc(doc);
@@ -2019,7 +2010,9 @@ function populateMetaOnlyFromDoc(doc){
     if(b.classList.contains('b-drv')){
       var drv=txt.replace(/system/gi,'').trim().toUpperCase();
       if(drv==='RHD'||drv==='LHD')STATE.drive=drv;
+      if(txt)STATE.driveBadge=txt;
     }
+    if(b.classList.contains('b-tested')&&txt){STATE.qualityBadge=txt;}
     if(b.classList.contains('b-tax')&&txt){STATE.taxBadge=txt;}
     if(b.classList.contains('b-condition')){
       // live data uses text "Brand new" / "Pre-owned" (no is-new class)
@@ -2136,7 +2129,6 @@ async function loadProduct(id){
   STATE.labelTitle=(prod.label&&prod.label.title)||'';
   v('f-label-title',STATE.labelTitle);
   setLabelEnabled(STATE.labelEnabled,true);
-  v('f-tax-badge',STATE.taxBadge||'NO VAT');
   syncSlugLockUi();
   if(!STATE.customSlug)warnings.push('No URL slug set in GHL');
 
@@ -2182,6 +2174,7 @@ async function loadProduct(id){
       STATE.priceId        =fp._id||fp.id||null;
       STATE._priceDisplay  =fp.amount!=null?String(fp.amount):'';
       STATE._priceName     =fp.name||'';
+      STATE.sku            =fp.sku||'';        // the real SKU on the price record
       STATE.trackInventory =!!fp.trackInventory;
       STATE.stockQty       =typeof fp.availableQuantity==='number'?fp.availableQuantity:(parseInt(fp.availableQuantity)||0);
     } else {
@@ -2257,9 +2250,6 @@ async function loadProduct(id){
 
   // Badges
   syncBadgeInputs();
-  var qn=$('f-quality-new'),qu=$('f-quality-used');
-  if(qn)qn.value=DEFAULT_QUALITY_NEW;
-  if(qu)qu.value=DEFAULT_QUALITY_USED;
 
   // Tags, chips, tables, images
   syncCollectionSelect();
@@ -2509,21 +2499,24 @@ function toggleSection(id){var el=$(id);if(el)el.classList.toggle('open');}
 // ── BADGES ──────────────────────────────────────────────────────
 function renderBadgeEditors(){
   var isNew=STATE.condition==='new';
+  var quality=STATE.qualityBadge||(isNew?DEFAULT_QUALITY_NEW:DEFAULT_QUALITY_USED);
+  var driveTxt=STATE.driveBadge||STATE.drive;
   var row='<span class="swatch sw-tax">'+esc(STATE.taxBadge||'NO VAT')+'</span>'
     +'<span class="swatch '+(isNew?'sw-new':'sw-used')+'">'+(isNew?'Brand new':'Pre-owned')+'</span>'
-    +'<span class="swatch sw-cyan">'+esc(isNew?DEFAULT_QUALITY_NEW:DEFAULT_QUALITY_USED)+'</span>'
-    +'<span class="swatch '+(STATE.drive==='LHD'?'sw-lhd':'sw-rhd')+'">'+esc(STATE.drive)+'</span>'
+    +'<span class="swatch sw-cyan">'+esc(quality)+'</span>'
+    +'<span class="swatch '+(STATE.drive==='LHD'?'sw-lhd':'sw-rhd')+'">'+esc(driveTxt)+'</span>'
     +'<span class="swatch sw-pink">'+STATE.warrantyMonths+'-month warranty</span>';
   var h2=$('badge-preview-row');if(h2)h2.innerHTML=row;
-  // Deliberately does NOT write back into f-warranty / f-returns. It is called from
-  // their own oninput, and echoing the parsed value made the fields impossible to
-  // clear and retype (an empty box came back as "0"). syncBadgeInputs() below is for
-  // load / undo, where the inputs really do need to follow STATE.
+  // Deliberately does NOT write back into the inputs it is called from — echoing the
+  // parsed value made the number fields impossible to clear and retype.
 }
 function syncBadgeInputs(){
+  var isNew=STATE.condition==='new';
+  v('f-tax-badge',STATE.taxBadge||'NO VAT');
   v('f-warranty',String(STATE.warrantyMonths));
   v('f-returns',String(STATE.returnsDays));
-  v('f-tax-badge',STATE.taxBadge||'NO VAT');
+  v('f-quality-badge',STATE.qualityBadge||(isNew?DEFAULT_QUALITY_NEW:DEFAULT_QUALITY_USED));
+  v('f-drive-badge',STATE.driveBadge||STATE.drive);
 }
 function resetDescNote(){var d=STATE.condition==='new'?DEFAULT_DESC_NEW:DEFAULT_DESC_USED;v('f-desc-note',d);STATE.descNote=d;markChange();}
 function resetFooterNote(){var f=STATE.condition==='new'?DEFAULT_FOOTER_NEW:DEFAULT_FOOTER_USED;v('f-footer-note',f);STATE.footerNote=f;markChange();}
@@ -2975,25 +2968,11 @@ function chipsBlock(arr){
   if(!arr.length)return '<div class="chips"></div>';
   return '<div class="chips">\n'+arr.map(function(x){return '    <span class="chip">'+entText(x)+'</span>';}).join('\n')+'\n  </div>';
 }
-function buildMetaJson(){
-  return JSON.stringify({
-    brand:STATE.brand,model:STATE.model,year:STATE.year,mpn:STATE.mpn,
-    partType:STATE.partType,condition:STATE.condition,drive:STATE.drive,
-    availableInStore:STATE.availableInStore,
-    modules:STATE.modules,oerefs:STATE.oerefs,productTags:STATE.productTags,
-    descNote:STATE.descNote,cta1:STATE.cta1,cta2:STATE.cta2,cta3:STATE.cta3,
-    footerNote:STATE.footerNote,warrantyMonths:STATE.warrantyMonths,returnsDays:STATE.returnsDays,
-    compatRows:STATE.compatRows,deliveryRows:STATE.deliveryRows,
-    featImg:{url:STATE.featImg.url,uploadedUrl:STATE.featImg.uploadedUrl,
-             gmcAlt:STATE.featImg.gmcAlt||buildGmcAlt(),iptcKeywords:STATE.featImg.iptcKeywords},
-    seoTitle:STATE.seoTitle,seoDesc:STATE.seoDesc
-  }).replace(/<\//g,'<\\/');
-}
 function renderDescriptionFragment(){
   var isNew=STATE.condition==='new';
   var collSlug=STATE.collSlug||slugify(STATE.brand);
   var brandDisplay=STATE.brand==='Mercedes'?'Mercedes-Benz':STATE.brand;
-  var quality=isNew?(DEFAULT_QUALITY_NEW||'Genuine OEM'):(DEFAULT_QUALITY_USED||'Tested');
+  var quality=STATE.qualityBadge||(isNew?DEFAULT_QUALITY_NEW:DEFAULT_QUALITY_USED);
   var compatTrs=STATE.compatRows.filter(function(r){return r.make||r.model;}).map(function(r){
     return '        <tr><td>'+entText(r.make)+'</td><td>'+entText(r.model)+'</td><td>'+entText(r.platform)+'</td><td>'+entText(r.years)+'</td><td>'+entText(r.drive)+'</td></tr>';
   }).join('\n');
@@ -3013,7 +2992,7 @@ function renderDescriptionFragment(){
     +'    <span class="bdg b-condition">'+(isNew?'Brand new':'Pre-owned')+'</span>\n'
     +'    <span class="bdg b-tested">'+esc(quality)+'</span>\n'
     +'    <span class="bdg b-war">'+STATE.warrantyMonths+'-month warranty</span>\n'
-    +'    <span class="bdg b-drv">'+esc(STATE.drive)+'</span>\n'
+    +'    <span class="bdg b-drv">'+esc(STATE.driveBadge||STATE.drive)+'</span>\n'
     +'  </div>\n\n'
     +'  <div class="rule"></div>\n\n'
     +'  <div class="s-hd mt-16">\n    <h2>Specification</h2>\n  </div>\n\n'
@@ -3045,7 +3024,7 @@ function renderDescriptionFragment(){
     +'  <p class="note">Returns accepted within '+STATE.returnsDays+' days of delivery. Items must be in original condition. Return shipping is at the buyer\'s expense. Refunds processed within 7 business days. <a href="'+RETURNS_URL+'">Returns policy</a>.</p>\n'
     +'  <p class="note">Warranty: '+STATE.warrantyMonths+' months from date of purchase. Covers manufacturing defects, non-working or damaged parts. Does not cover mechanical damage, incorrect installation, or misuse.</p>\n'
     +'  <p class="note">'+footer+'</p>\n'
-    +'<script type="application/json" id="psrd-meta">'+buildMetaJson()+'<\/script>\n'
+
     +'</div>';
 }
 // Full page — PREVIEW ONLY (never published)
@@ -3253,7 +3232,7 @@ async function publishProduct(){
   // STEP 4: price \u2014 stock tracking lives ON the price record in GHL
   // (correct endpoint is /products/{id}/price \u2014 singular)
   $('pub-sub').textContent='Saving price\u2026';
-  var sku=buildSku();
+  var sku=currentSku();
   var pricePayload={
     name:name,
     type:'one_time',
@@ -3355,7 +3334,7 @@ var SNAP_FIELDS=['brand','model','year','mpn','partType','condition','drive',
   'availableInStore','customSlug','slugLocked','taxBadge','_priceDisplay',
   'trackInventory','stockQty','labelEnabled','labelTitle','descNote','footerNote',
   'cta1','cta2','cta3','warrantyMonths','returnsDays','modules','oerefs','productTags',
-  'compatRows','deliveryRows','seoTitle','seoDesc','seoKeywords','seoManual',
+  'compatRows','deliveryRows','seoTitle','seoDesc','seoKeywords','seoManual','qualityBadge','driveBadge',
   'collSlug','collectionId'];
 function _snapshot(){
   var o={};
