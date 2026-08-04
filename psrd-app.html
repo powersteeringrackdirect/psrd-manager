@@ -47,9 +47,6 @@ a{color:var(--accent);text-decoration:none}
 .icon-btn svg{width:16px;height:16px}
 .menu-btn{display:none}
 @media(max-width:920px){.menu-btn{display:grid}}
-.coll-btn{padding:6px 12px;border-radius:var(--r);background:var(--bg-2);border:1px solid var(--line);color:var(--ink-2);font-size:12px;font-weight:500;display:flex;align-items:center;gap:6px;transition:background .12s,color .12s}
-.coll-btn:hover{background:var(--bg-3);color:var(--accent);border-color:var(--accent)}
-.coll-btn svg{width:14px;height:14px}
 #body{flex:1;display:flex;min-height:0;position:relative}
 #sidebar{width:var(--w-sidebar);flex-shrink:0;background:var(--bg-1);border-right:1px solid var(--line);display:flex;flex-direction:column;min-height:0}
 .sidebar-head{padding:14px 16px 12px;border-bottom:1px solid var(--line)}
@@ -167,6 +164,15 @@ input.mono,textarea.mono{font-family:var(--font-mono);font-size:13px}
 .lw-head{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;color:var(--warn);margin-bottom:6px}
 .lw-head .btn-link{padding:2px 8px;font-size:11px}
 .lw-list{margin:0;padding-left:18px;font-size:12.5px;color:var(--ink-2);line-height:1.6}
+/* Collection picker + its "New collection" button, in Core data */
+.coll-field{display:flex;gap:8px;align-items:stretch}
+.coll-field select{flex:1;min-width:0}
+.coll-field .btn{white-space:nowrap}
+@media(max-width:560px){.coll-field{flex-direction:column}}
+/* Read-only badge row note in Page content */
+.badge-note{font-size:11.5px;color:var(--ink-4);line-height:1.55;margin-top:8px}
+.badge-note strong{color:var(--ink-2);font-weight:600}
+.cta-hint{font-size:11px;color:var(--ink-4);font-style:italic;margin-top:5px}
 .compat-status{font-size:11.5px;color:var(--ink-3);font-family:var(--font-mono)}
 .compat-status.ok{color:var(--ok)}
 .compat-status.warn{color:var(--warn)}
@@ -325,7 +331,6 @@ button{min-height:34px}
 #collections-title{font-size:14px;font-weight:600;color:var(--ink)}
 #collections-scroll{flex:1;overflow-y:auto;padding:20px 24px calc(var(--h-action) + 32px);-webkit-overflow-scrolling:touch}
 @media(max-width:560px){#collections-scroll{padding:14px 14px calc(var(--h-action) + 24px)}}
-.coll-btn.is-on{background:var(--accent-w);color:var(--accent);border-color:var(--accent)}
 .coll-grid{display:grid;grid-template-columns:280px 1fr;gap:var(--s4);align-items:start}
 .coll-list{padding:var(--s2)!important;max-height:70vh;overflow:auto}
 .coll-item{display:flex;align-items:center;gap:var(--s3);padding:var(--s2) var(--s3);border-radius:8px;cursor:pointer}
@@ -403,7 +408,6 @@ button{min-height:34px}
     <div class="brand"><div class="brand-mark">P</div><div class="brand-text">PSRD<span class="muted">/ Product Manager</span></div></div>
     <div class="header-right">
       <div class="status" id="status-wrap"><span class="status-dot"></span><span class="status-text" id="status-text">Loading…</span></div>
-      <button class="coll-btn" id="btn-collections" onclick="showCollections(true)"><svg><use href="#i-layers"/></svg><span class="action-labels">Collections</span></button>
       <button class="icon-btn" onclick="openModal('settings-modal')" aria-label="Settings"><svg><use href="#i-settings"/></svg></button>
       <button class="icon-btn" onclick="refreshProducts()" aria-label="Refresh"><svg><use href="#i-refresh"/></svg></button>
     </div>
@@ -413,7 +417,7 @@ button{min-height:34px}
     <aside id="sidebar">
       <div class="sidebar-head">
         <div class="sidebar-label"><span>Products</span><span class="count-badge" id="list-count">—</span></div>
-        <div class="search-wrap"><svg><use href="#i-search"/></svg><input id="search" type="search" placeholder="Search by name…" oninput="filterProducts()"></div>
+        <div class="search-wrap"><svg><use href="#i-search"/></svg><input id="search" type="search" placeholder="Search name or part number…" oninput="filterProducts()"></div>
       </div>
       <div id="prod-list"></div>
       <button class="btn-new-product" onclick="newProduct()"><svg width="14" height="14"><use href="#i-plus"/></svg> Add new product</button>
@@ -490,9 +494,9 @@ button{min-height:34px}
         <div id="editor-scroll">
           <div id="load-warnings" style="display:none"></div>
 
-          <!-- 1. PRODUCT INFORMATION -->
+          <!-- 1. CORE DATA -->
           <section class="section open" id="sec-core">
-            <header class="section-head" onclick="toggleSection('sec-core')"><div class="section-text"><div class="section-title">Product Information</div></div><span class="chev"><svg><use href="#i-chev"/></svg></span></header>
+            <header class="section-head" onclick="toggleSection('sec-core')"><div class="section-text"><div class="section-title">Core data</div><div class="section-sub">Identity, pricing and store placement</div></div><span class="chev"><svg><use href="#i-chev"/></svg></span></header>
             <div class="section-body">
               <div class="field">
                 <label class="label">Availability</label>
@@ -507,25 +511,21 @@ button{min-height:34px}
                   <select id="f-brand-sel" onchange="onBrandChange(this.value)"></select>
                 </div>
                 <div class="field">
-                  <label class="label" for="f-model">Model <span class="req">*</span></label>
-                  <input id="f-model" type="text" placeholder="A6 C7" oninput="STATE.model=this.value.trim();autoName();markChange()">
+                  <label class="label" for="f-sku-display">SKU <span class="hint">— auto, pushed to the GHL price record</span></label>
+                  <input id="f-sku-display" type="text" class="mono" readonly tabindex="-1" placeholder="set Brand, Part type and MPN">
                 </div>
               </div>
               <div class="row row-2">
+                <div class="field">
+                  <label class="label" for="f-model">Model <span class="req">*</span></label>
+                  <input id="f-model" type="text" placeholder="A6 C7" oninput="STATE.model=this.value.trim();autoName();markChange()">
+                </div>
                 <div class="field">
                   <label class="label" for="f-year">Year range <span class="req">*</span></label>
                   <input id="f-year" type="text" placeholder="2012–2018" oninput="STATE.year=this.value.trim();autoName();markChange()">
                 </div>
-                <div class="field">
-                  <label class="label" for="f-parttype">Part type <span class="req">*</span></label>
-                  <select id="f-parttype" onchange="onPartTypeChange(this.value)">
-                    <option value="EPS Rack">EPS Rack</option>
-                    <option value="Steering Rack">Steering Rack</option>
-                    <option value="Steering Column">Steering Column</option>
-                  </select>
-                </div>
               </div>
-              <div class="row row-2">
+              <div class="row row-3">
                 <div class="field">
                   <span class="label">Condition <span class="req">*</span></span>
                   <div class="seg" id="cond-seg">
@@ -540,46 +540,56 @@ button{min-height:34px}
                     <button data-v="LHD" onclick="setDrive('LHD')">LHD</button>
                   </div>
                 </div>
-              </div>
-              <div class="field">
-                <label class="label" for="f-mpn">MPN <span class="req">*</span></label>
-                <input id="f-mpn" type="text" class="mono" placeholder="4G2423055BE" oninput="STATE.mpn=this.value.trim().toUpperCase();autoName();autoSku();autoSeo();markChange();maybeAutoCompat()">
-              </div>
-              <!-- Auto-generated name / SKU / collection preview -->
-              <div class="field" style="background:var(--bg-2);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px">
-                <div style="font-size:13.5px;font-weight:500;color:var(--ink);margin-bottom:4px;line-height:1.4" id="auto-name-preview">—</div>
-                <div style="font-family:var(--font-mono);font-size:11px;color:var(--ink-3)" id="auto-sku-preview"></div>
-                <div style="font-size:11px;color:var(--ink-4);margin-top:2px" id="auto-coll-preview"></div>
-              </div>
-              <!-- URL Slug -->
-              <div class="field" style="margin-top:12px">
-                <label class="label" for="f-slug">URL slug</label>
-                <div style="display:flex;gap:8px;align-items:stretch">
-                  <input id="f-slug" type="text" class="mono" placeholder="auto-generated…" oninput="onSlugInput(this.value)" style="flex:1">
-                  <button class="btn btn-ghost" type="button" id="btn-slug-lock" style="font-size:11px;padding:6px 10px;display:none" title="Existing product slugs are locked so store URLs never break" onclick="toggleSlugLock()">🔒 Locked</button>
-                  <button class="btn-link" id="btn-reset-slug" onclick="resetSlug()" style="display:none">↻</button>
+                <div class="field">
+                  <label class="label" for="f-parttype">Part type <span class="req">*</span></label>
+                  <select id="f-parttype" onchange="onPartTypeChange(this.value)">
+                    <option value="EPS Rack">EPS Rack</option>
+                    <option value="Steering Rack">Steering Rack</option>
+                    <option value="Steering Column">Steering Column</option>
+                  </select>
                 </div>
-                <div style="font-family:var(--font-mono);font-size:11px;color:var(--ok);margin-top:5px;word-break:break-all" id="slug-preview"></div>
               </div>
-            </div>
-          </section>
-
-          <!-- 2. PRICING & STOCK -->
-          <section class="section open" id="sec-pricing">
-            <header class="section-head" onclick="toggleSection('sec-pricing')"><div class="section-text"><div class="section-title">Pricing &amp; Stock</div></div><span class="chev"><svg><use href="#i-chev"/></svg></span></header>
-            <div class="section-body">
               <div class="row row-2">
                 <div class="field">
                   <label class="label" for="f-price">Price (GBP) <span class="req">*</span></label>
                   <input id="f-price" type="number" step="0.01" min="0" placeholder="299.99" oninput="STATE._priceDisplay=this.value;markChange()">
                 </div>
                 <div class="field">
-                  <label class="label" for="f-sku-display">SKU <span class="hint">auto &#8212; pushed to the GHL price record</span></label>
-                  <input id="f-sku-display" type="text" class="mono" readonly tabindex="-1" placeholder="set Brand, Part type and MPN above">
+                  <label class="label" for="f-slug">Slug <span class="hint">— read-only after first publish</span></label>
+                  <div style="display:flex;gap:8px;align-items:stretch">
+                    <input id="f-slug" type="text" class="mono" placeholder="auto-generated…" oninput="onSlugInput(this.value)" style="flex:1;min-width:0">
+                    <button class="btn btn-ghost" type="button" id="btn-slug-lock" style="font-size:11px;padding:6px 10px;display:none" title="Existing product slugs are locked so store URLs never break" onclick="toggleSlugLock()">🔒 Locked</button>
+                    <button class="btn-link" id="btn-reset-slug" onclick="resetSlug()" style="display:none">↻</button>
+                  </div>
                 </div>
               </div>
+
+              <!-- COLLECTION — store placement lives here in the editor, next to the
+                   fields that determine it, not behind a button in the header. -->
               <div class="field">
-                <label class="label" for="f-price-name">Price name <span class="hint">auto &#8212; always equals the product name</span></label>
+                <label class="label" for="f-collection">Collection <span class="hint">— auto from brand</span></label>
+                <div class="coll-field">
+                  <select id="f-collection" onchange="onCollectionChange(this.value)"></select>
+                  <button class="btn btn-ghost" type="button" onclick="showCollections(true)" title="Manage collections, images and collection SEO"><svg width="13" height="13"><use href="#i-plus"/></svg> New collection</button>
+                </div>
+              </div>
+
+              <!-- Auto-generated name / SKU / slug preview -->
+              <div class="field" style="background:var(--bg-2);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;margin-bottom:0">
+                <div style="font-size:13.5px;font-weight:500;color:var(--ink);margin-bottom:4px;line-height:1.4" id="auto-name-preview">—</div>
+                <div style="font-family:var(--font-mono);font-size:11px;color:var(--ink-3)" id="auto-sku-preview"></div>
+                <div style="font-size:11px;color:var(--ink-4);margin-top:2px" id="auto-coll-preview"></div>
+                <div style="font-family:var(--font-mono);font-size:11px;color:var(--ok);margin-top:5px;word-break:break-all" id="slug-preview"></div>
+              </div>
+            </div>
+          </section>
+
+          <!-- 2. STOCK & LABEL -->
+          <section class="section open" id="sec-pricing">
+            <header class="section-head" onclick="toggleSection('sec-pricing')"><div class="section-text"><div class="section-title">Stock &amp; label</div><div class="section-sub">Inventory tracking and the ribbon on the store card</div></div><span class="chev"><svg><use href="#i-chev"/></svg></span></header>
+            <div class="section-body">
+              <div class="field">
+                <label class="label" for="f-price-name">Price name <span class="hint">— auto, always equals the product name</span></label>
                 <input id="f-price-name" type="text" readonly tabindex="-1" placeholder="set Brand, Model and MPN above">
               </div>
 
@@ -587,7 +597,7 @@ button{min-height:34px}
 
               <div class="row row-2">
                 <div class="field">
-                  <span class="label">Product label <span class="hint">ribbon on the store card</span></span>
+                  <span class="label">Product label <span class="hint">— ribbon on the store card</span></span>
                   <div class="seg" id="label-seg">
                     <button type="button" data-v="on" onclick="setLabelEnabled(true)">On</button>
                     <button type="button" data-v="off" onclick="setLabelEnabled(false)">Off</button>
@@ -602,14 +612,14 @@ button{min-height:34px}
               <hr class="rule-inner">
 
               <div class="row row-2">
-                <div class="field">
+                <div class="field" style="margin-bottom:0">
                   <span class="label">Track inventory</span>
                   <div class="seg" id="inv-seg">
                     <button type="button" data-v="on" onclick="setTrackInventory(true)">On</button>
                     <button type="button" data-v="off" onclick="setTrackInventory(false)">Off</button>
                   </div>
                 </div>
-                <div class="field" id="stock-qty-wrap">
+                <div class="field" id="stock-qty-wrap" style="margin-bottom:0">
                   <label class="label" for="f-stock-qty">Stock quantity</label>
                   <div class="qty-row">
                     <input id="f-stock-qty" type="number" min="0" step="1" placeholder="0" oninput="STATE.stockQty=parseInt(this.value)||0;updateStockBadge();markChange()">
@@ -622,148 +632,87 @@ button{min-height:34px}
 
           <!-- 3. NUMBERS -->
           <section class="section open" id="sec-parts">
-            <header class="section-head" onclick="toggleSection('sec-parts')"><div class="section-text"><div class="section-title">Numbers</div></div><span class="chev"><svg><use href="#i-chev"/></svg></span></header>
+            <header class="section-head" onclick="toggleSection('sec-parts')"><div class="section-text"><div class="section-title">Numbers</div><div class="section-sub">Part number, module and OE cross-references</div></div><span class="chev"><svg><use href="#i-chev"/></svg></span></header>
             <div class="section-body">
               <div class="field">
-                <label class="label">Electronic module numbers</label>
+                <label class="label" for="f-mpn">Manufacturer part number (MPN) <span class="req">*</span></label>
+                <input id="f-mpn" type="text" class="mono" placeholder="4G2423055BE" oninput="STATE.mpn=this.value.trim().toUpperCase();autoName();autoSku();autoSeo();markChange();maybeAutoCompat()">
+              </div>
+              <div class="field">
+                <label class="label">Module numbers <span class="hint">— press Enter after each</span></label>
                 <div class="tag-wrap" onclick="this.querySelector('.tag-input').focus()">
                   <span id="modules-tags" style="display:contents"></span>
-                  <input class="tag-input" id="modules-input" placeholder="Enter + press Return" onkeydown="handleTagKey(event,'modules')">
-                </div>
-              </div>
-              <div class="field">
-                <label class="label">OE / cross-reference numbers</label>
-                <div class="tag-wrap" onclick="this.querySelector('.tag-input').focus()">
-                  <span id="oerefs-tags" style="display:contents"></span>
-                  <input class="tag-input" id="oerefs-input" placeholder="Enter + press Return" onkeydown="handleTagKey(event,'oerefs')">
-                </div>
-              </div>
-            </div>
-          </section>
-
-          <!-- 4. VEHICLE COMPATIBILITY -->
-          <section class="section open" id="sec-compat">
-            <header class="section-head" onclick="toggleSection('sec-compat')"><div class="section-text"><div class="section-title">Vehicle Compatibility</div></div><span class="chev"><svg><use href="#i-chev"/></svg></span></header>
-            <div class="section-body">
-              <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
-                <button class="btn-link" id="btn-lookup-compat" onclick="lookupCompat()"><svg width="12" height="12"><use href="#i-ai"/></svg> Auto-fill from MPN</button>
-                <span id="compat-status" class="compat-status"></span>
-              </div>
-              <div id="compat-suggest" class="compat-suggest" style="display:none"></div>
-              <div class="compat-headers"><span>Make</span><span>Model</span><span>Chassis</span><span>Years</span><span>Drive</span><span></span></div>
-              <div class="compat-list" id="compat-rows"></div>
-              <button class="btn-add" onclick="addCompatRow()"><svg width="12" height="12"><use href="#i-plus"/></svg> Add vehicle</button>
-            </div>
-          </section>
-
-          <!-- 5. SEARCH ENGINE LISTING -->
-          <section class="section open" id="sec-seo">
-            <header class="section-head" onclick="toggleSection('sec-seo')"><div class="section-text"><div class="section-title">Search Engine Listing</div></div><span class="chev"><svg><use href="#i-chev"/></svg></span></header>
-            <div class="section-body">
-              <div class="field">
-                <label class="label" for="f-seo-title">SEO title <span class="hint">≤70 chars</span></label>
-                <input id="f-seo-title" type="text" oninput="STATE.seoManual=true;charCount('f-seo-title','cc-title',SEO_TITLE_MAX);updateSeoPreview();markChange()">
-                <div class="char-count" id="cc-title">0 / 70</div>
-              </div>
-              <div class="field">
-                <label class="label" for="f-seo-desc">SEO description <span class="hint">≤150 chars</span></label>
-                <textarea id="f-seo-desc" rows="2" oninput="STATE.seoManual=true;charCount('f-seo-desc','cc-desc',SEO_DESC_MAX);updateSeoPreview();markChange()"></textarea>
-                <div class="char-count" id="cc-desc">0 / 150</div>
-              </div>
-              <div class="field">
-                <label class="label">Tags</label>
-                <div class="tag-wrap" onclick="this.querySelector('.tag-input').focus()">
-                  <span id="productTags-tags" style="display:contents"></span>
-                  <input class="tag-input" id="productTags-input" placeholder="Enter + press Return" onkeydown="handleTagKey(event,'productTags')">
-                </div>
-              </div>
-              <div class="seo-preview">
-                <div class="seo-preview-url">powersteeringrackdirect.com › product-details › <span id="seo-slug-preview" style="color:var(--ok)"></span></div>
-                <div class="seo-preview-title" id="seo-pt">—</div>
-                <div class="seo-preview-desc" id="seo-pd">—</div>
-              </div>
-              <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
-                <button class="btn btn-ghost" style="font-size:12px;padding:7px 12px" onclick="autoSeo(true)"><svg><use href="#i-refresh"/></svg> Re-generate</button>
-                <button class="btn btn-ghost" id="btn-verify-seo" style="font-size:12px;padding:7px 12px" onclick="verifySeoWithAgent()"><svg><use href="#i-ai"/></svg> AI verify</button>
-              </div>
-            </div>
-          </section>
-
-          <!-- 6. BADGES & RIBBONS -->
-          <section class="section" id="sec-badges">
-            <header class="section-head" onclick="toggleSection('sec-badges')"><div class="section-text"><div class="section-title">Badges &amp; Ribbons</div></div><span class="chev"><svg><use href="#i-chev"/></svg></span></header>
-            <div class="section-body">
-              <div class="row row-3">
-                <div class="field">
-                  <label class="label" for="f-tax-badge">Tax badge</label>
-                  <input id="f-tax-badge" type="text" value="NO VAT" oninput="STATE.taxBadge=this.value;renderBadgeEditors();markChange()">
-                </div>
-                <div class="field">
-                  <label class="label" for="f-warranty">Warranty <span class="hint">months</span></label>
-                  <input id="f-warranty" type="number" min="0" max="60" step="1" value="6" oninput="STATE.warrantyMonths=parseInt(this.value)||0;renderBadgeEditors();autoSeo();markChange()">
-                </div>
-                <div class="field">
-                  <label class="label" for="f-returns">Returns <span class="hint">days</span></label>
-                  <input id="f-returns" type="number" min="0" max="365" step="1" value="14" oninput="STATE.returnsDays=parseInt(this.value)||0;markChange()">
-                </div>
-              </div>
-              <div class="row row-2">
-                <div class="field">
-                  <label class="label" for="f-quality-new">Quality badge <span class="hint">New OEM</span></label>
-                  <input id="f-quality-new" type="text" placeholder="OEM Quality" oninput="DEFAULT_QUALITY_NEW=this.value;renderBadgeEditors();markChange()">
-                </div>
-                <div class="field">
-                  <label class="label" for="f-quality-used">Quality badge <span class="hint">Pre-owned</span></label>
-                  <input id="f-quality-used" type="text" placeholder="Tested &amp; Inspected" oninput="DEFAULT_QUALITY_USED=this.value;renderBadgeEditors();markChange()">
+                  <input class="tag-input" id="modules-input" placeholder="e.g. 4G0909144G" onkeydown="handleTagKey(event,'modules')">
                 </div>
               </div>
               <div class="field" style="margin-bottom:0">
-                <label class="label">Live preview</label>
-                <div class="badge-preview" id="badge-preview-row"></div>
+                <label class="label">OE / cross-reference numbers <span class="hint">— press Enter after each</span></label>
+                <div class="tag-wrap" onclick="this.querySelector('.tag-input').focus()">
+                  <span id="oerefs-tags" style="display:contents"></span>
+                  <input class="tag-input" id="oerefs-input" placeholder="e.g. 4G2423055DD" onkeydown="handleTagKey(event,'oerefs')">
+                </div>
               </div>
             </div>
           </section>
 
-          <!-- 7. DESCRIPTION NOTE -->
-          <section class="section" id="sec-desc">
-            <header class="section-head" onclick="toggleSection('sec-desc')"><div class="section-text"><div class="section-title">Description note</div></div><span class="chev"><svg><use href="#i-chev"/></svg></span></header>
+          <!-- 4. DESCRIPTION NOTE -->
+          <section class="section open" id="sec-desc">
+            <header class="section-head" onclick="toggleSection('sec-desc')"><div class="section-text"><div class="section-title">Description note</div><div class="section-sub">Condition note on product page · switches with New / Pre-owned</div></div><span class="chev"><svg><use href="#i-chev"/></svg></span></header>
+            <div class="section-body">
+              <div class="field" style="margin-bottom:0">
+                <textarea id="f-desc-note" rows="3" oninput="STATE.descNote=this.value;markChange()"></textarea>
+                <button class="btn-link" style="margin-top:6px" onclick="resetDescNote()">↻ Reset default for current condition</button>
+              </div>
+            </div>
+          </section>
+
+          <!-- 5. PAGE CONTENT -->
+          <section class="section open" id="sec-content">
+            <header class="section-head" onclick="toggleSection('sec-content')"><div class="section-text"><div class="section-title">Page content</div><div class="section-sub">CTAs &amp; footer note · badges auto-populate from condition / drive</div></div><span class="chev"><svg><use href="#i-chev"/></svg></span></header>
             <div class="section-body">
               <div class="field">
-                <textarea id="f-desc-note" rows="3" oninput="STATE.descNote=this.value;markChange()"></textarea>
-                <button class="btn-link" style="margin-top:6px" onclick="resetDescNote()">↻ Reset</button>
+                <label class="label">Top badges <span class="hint">— read-only · populated from product details</span></label>
+                <div class="badge-preview" id="badge-preview-row"></div>
+                <div class="badge-note">Auto-populated from <strong>Condition</strong> &amp; <strong>Driver side</strong> in <strong>Core data</strong>. Edit those to change these badges, or open <strong>Badges &amp; ribbons</strong> to change the wording.</div>
               </div>
-            </div>
-          </section>
-
-          <!-- 8. PAGE CONTENT -->
-          <section class="section" id="sec-content">
-            <header class="section-head" onclick="toggleSection('sec-content')"><div class="section-text"><div class="section-title">Page content</div></div><span class="chev"><svg><use href="#i-chev"/></svg></span></header>
-            <div class="section-body">
               <div class="row row-3">
                 <div class="field">
-                  <label class="label" for="f-cta-1">CTA 1 — Search link</label>
+                  <label class="label" for="f-cta-1">CTA 1 — Fitment</label>
                   <input id="f-cta-1" type="text" value="Search part" oninput="STATE.cta1=this.value;markChange()">
+                  <div class="cta-hint">→ Triggers: opens the store search</div>
                 </div>
                 <div class="field">
-                  <label class="label" for="f-cta-2">CTA 2 — Fitment popup</label>
+                  <label class="label" for="f-cta-2">CTA 2 — Support</label>
                   <input id="f-cta-2" type="text" value="Fitment check" oninput="STATE.cta2=this.value;markChange()">
+                  <div class="cta-hint">→ Triggers: opens the fitment popup</div>
                 </div>
                 <div class="field">
-                  <label class="label" for="f-cta-3">CTA 3 — WhatsApp</label>
+                  <label class="label" for="f-cta-3">CTA 3 — Action</label>
                   <input id="f-cta-3" type="text" value="Tech support" oninput="STATE.cta3=this.value;markChange()">
+                  <div class="cta-hint">→ Triggers: opens WhatsApp chat</div>
                 </div>
               </div>
-              <div class="field" style="margin-top:14px">
-                <label class="label" for="f-footer-note">Footer note</label>
+              <div class="field" style="margin-bottom:0">
+                <label class="label" for="f-footer-note">Footer note <span class="hint">— condition-specific · auto-fills on toggle</span></label>
                 <textarea id="f-footer-note" rows="2" oninput="STATE.footerNote=this.value;markChange()"></textarea>
-                <button class="btn-link" style="margin-top:6px" onclick="resetFooterNote()">↻ Reset</button>
+                <button class="btn-link" style="margin-top:6px" onclick="resetFooterNote()">↻ Reset default for current condition</button>
               </div>
             </div>
           </section>
 
-          <!-- 9. PRODUCT MEDIA -->
+          <!-- 6. DELIVERY & RETURNS -->
+          <section class="section open" id="sec-delivery">
+            <header class="section-head" onclick="toggleSection('sec-delivery')"><div class="section-text"><div class="section-title">Delivery &amp; Returns</div><div class="section-sub">Rates per zone · transit windows</div></div><span class="chev"><svg><use href="#i-chev"/></svg></span></header>
+            <div class="section-body">
+              <div class="delivery-headers"><span>Zone</span><span>Rate</span><span>Handling</span><span>Transit</span><span></span></div>
+              <div class="compat-list" id="delivery-rows"></div>
+              <button class="btn-add" onclick="addDeliveryRow()"><svg width="12" height="12"><use href="#i-plus"/></svg> Add zone</button>
+            </div>
+          </section>
+
+          <!-- 7. IMAGES -->
           <section class="section open" id="sec-images">
-            <header class="section-head" onclick="toggleSection('sec-images')"><div class="section-text"><div class="section-title">Product Media</div></div><span class="chev"><svg><use href="#i-chev"/></svg></span></header>
+            <header class="section-head" onclick="toggleSection('sec-images')"><div class="section-text"><div class="section-title">Product Media</div><div class="section-sub">Featured image = 1500×1500 WebP</div></div><span class="chev"><svg><use href="#i-chev"/></svg></span></header>
             <div class="section-body">
               <div class="field">
                 <label class="label">Featured image <span class="hint">1500×1500 · white background · becomes the GHL product image</span></label>
@@ -799,13 +748,82 @@ button{min-height:34px}
             </div>
           </section>
 
-          <!-- 10. DELIVERY & RETURNS -->
-          <section class="section" id="sec-delivery">
-            <header class="section-head" onclick="toggleSection('sec-delivery')"><div class="section-text"><div class="section-title">Delivery &amp; Returns</div></div><span class="chev"><svg><use href="#i-chev"/></svg></span></header>
+          <!-- 8. VEHICLE COMPATIBILITY -->
+          <section class="section open" id="sec-compat">
+            <header class="section-head" onclick="toggleSection('sec-compat')"><div class="section-text"><div class="section-title">Vehicle Compatibility</div><div class="section-sub">Vehicles this part fits · feeds the product name and SEO</div></div><span class="chev"><svg><use href="#i-chev"/></svg></span></header>
             <div class="section-body">
-              <div class="delivery-headers"><span>Zone</span><span>Rate</span><span>Handling</span><span>Transit</span><span></span></div>
-              <div class="compat-list" id="delivery-rows"></div>
-              <button class="btn-add" onclick="addDeliveryRow()"><svg width="12" height="12"><use href="#i-plus"/></svg> Add zone</button>
+              <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
+                <button class="btn-link" id="btn-lookup-compat" onclick="lookupCompat()"><svg width="12" height="12"><use href="#i-ai"/></svg> Auto-fill from MPN</button>
+                <span id="compat-status" class="compat-status"></span>
+              </div>
+              <div id="compat-suggest" class="compat-suggest" style="display:none"></div>
+              <div class="compat-headers"><span>Make</span><span>Model</span><span>Chassis</span><span>Years</span><span>Drive</span><span></span></div>
+              <div class="compat-list" id="compat-rows"></div>
+              <button class="btn-add" onclick="addCompatRow()"><svg width="12" height="12"><use href="#i-plus"/></svg> Add vehicle</button>
+            </div>
+          </section>
+
+          <!-- 9. SEARCH ENGINE LISTING -->
+          <section class="section" id="sec-seo">
+            <header class="section-head" onclick="toggleSection('sec-seo')"><div class="section-text"><div class="section-title">Search Engine Listing</div><div class="section-sub">Auto-generated from Core data, Numbers and Vehicle compatibility</div></div><span class="chev"><svg><use href="#i-chev"/></svg></span></header>
+            <div class="section-body">
+              <div class="field">
+                <label class="label" for="f-seo-title">SEO title <span class="hint">≤70 chars</span></label>
+                <input id="f-seo-title" type="text" oninput="STATE.seoManual=true;charCount('f-seo-title','cc-title',SEO_TITLE_MAX);updateSeoPreview();markChange()">
+                <div class="char-count" id="cc-title">0 / 70</div>
+              </div>
+              <div class="field">
+                <label class="label" for="f-seo-desc">SEO description <span class="hint">≤150 chars</span></label>
+                <textarea id="f-seo-desc" rows="2" oninput="STATE.seoManual=true;charCount('f-seo-desc','cc-desc',SEO_DESC_MAX);updateSeoPreview();markChange()"></textarea>
+                <div class="char-count" id="cc-desc">0 / 150</div>
+              </div>
+              <div class="field">
+                <label class="label">Tags</label>
+                <div class="tag-wrap" onclick="this.querySelector('.tag-input').focus()">
+                  <span id="productTags-tags" style="display:contents"></span>
+                  <input class="tag-input" id="productTags-input" placeholder="Enter + press Return" onkeydown="handleTagKey(event,'productTags')">
+                </div>
+              </div>
+              <div class="seo-preview">
+                <div class="seo-preview-url">powersteeringrackdirect.com › product-details › <span id="seo-slug-preview" style="color:var(--ok)"></span></div>
+                <div class="seo-preview-title" id="seo-pt">—</div>
+                <div class="seo-preview-desc" id="seo-pd">—</div>
+              </div>
+              <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
+                <button class="btn btn-ghost" style="font-size:12px;padding:7px 12px" onclick="autoSeo(true)"><svg><use href="#i-refresh"/></svg> Re-generate</button>
+                <button class="btn btn-ghost" id="btn-verify-seo" style="font-size:12px;padding:7px 12px" onclick="verifySeoWithAgent()"><svg><use href="#i-ai"/></svg> AI verify</button>
+              </div>
+            </div>
+          </section>
+
+          <!-- 10. BADGES & RIBBONS -->
+          <section class="section" id="sec-badges">
+            <header class="section-head" onclick="toggleSection('sec-badges')"><div class="section-text"><div class="section-title">Badges &amp; ribbons</div><div class="section-sub">Wording and durations behind the read-only badge row</div></div><span class="chev"><svg><use href="#i-chev"/></svg></span></header>
+            <div class="section-body">
+              <div class="row row-3">
+                <div class="field">
+                  <label class="label" for="f-tax-badge">Tax badge</label>
+                  <input id="f-tax-badge" type="text" value="NO VAT" oninput="STATE.taxBadge=this.value;renderBadgeEditors();markChange()">
+                </div>
+                <div class="field">
+                  <label class="label" for="f-warranty">Warranty <span class="hint">months</span></label>
+                  <input id="f-warranty" type="number" min="0" max="60" step="1" value="6" oninput="STATE.warrantyMonths=parseInt(this.value)||0;renderBadgeEditors();autoSeo();markChange()">
+                </div>
+                <div class="field">
+                  <label class="label" for="f-returns">Returns <span class="hint">days</span></label>
+                  <input id="f-returns" type="number" min="0" max="365" step="1" value="14" oninput="STATE.returnsDays=parseInt(this.value)||0;markChange()">
+                </div>
+              </div>
+              <div class="row row-2">
+                <div class="field">
+                  <label class="label" for="f-quality-new">Quality badge <span class="hint">New OEM</span></label>
+                  <input id="f-quality-new" type="text" placeholder="OEM Quality" oninput="DEFAULT_QUALITY_NEW=this.value;renderBadgeEditors();markChange()">
+                </div>
+                <div class="field">
+                  <label class="label" for="f-quality-used">Quality badge <span class="hint">Pre-owned</span></label>
+                  <input id="f-quality-used" type="text" placeholder="Tested &amp; Inspected" oninput="DEFAULT_QUALITY_USED=this.value;renderBadgeEditors();markChange()">
+                </div>
+              </div>
             </div>
           </section>
         </div><!-- /editor-scroll -->
@@ -1176,11 +1194,39 @@ function refreshCollections(){
   return attempt(0);
 }
 function _applyCollections(r){
+    _applyCollectionsInner(r);
+    buildCollectionSelect();
+}
+function _applyCollectionsInner(r){
     STATE.collections=(r.data.collections||(r.data.data&&r.data.data.collections)||r.data.data||[]).map(function(c){
       return{id:c._id||c.id||'',name:c.name||'',slug:c.slug||slugify(c.name||''),
              image:c.image||'',
              seoTitle:(c.seo&&c.seo.title)||'',seoDesc:(c.seo&&c.seo.description)||''};
     });
+}
+// The collection picker lives in Core data. It is normally driven by the brand,
+// but stays overridable for parts that belong somewhere else.
+function buildCollectionSelect(){
+  var sel=$('f-collection');if(!sel)return;
+  var opts=['<option value="">— none —</option>'];
+  STATE.collections.forEach(function(c){
+    opts.push('<option value="'+esc(c.id)+'">'+esc(c.name)+' ('+esc(c.slug)+')</option>');
+  });
+  sel.innerHTML=opts.join('');
+  sel.value=STATE.collectionId||'';
+}
+function syncCollectionSelect(){
+  var sel=$('f-collection');if(!sel)return;
+  if(sel.options.length<=1&&STATE.collections.length)buildCollectionSelect();
+  sel.value=STATE.collectionId||'';
+}
+function onCollectionChange(id){
+  STATE.collectionId=id||null;
+  var c=STATE.collections.find(function(x){return x.id===id;});
+  STATE.collSlug=c?c.slug:'';
+  STATE.collectionIdsAll=(STATE.collectionIdsAll||[]).filter(function(x){return x!==id;});
+  if(id)STATE.collectionIdsAll.unshift(id);
+  updateAutoPreview();markChange();
 }
 function findCollectionId(brand){
   if(!brand||!STATE.collections.length)return null;
@@ -1193,7 +1239,6 @@ function findCollectionId(brand){
 function showCollections(on){
   document.body.classList.toggle('coll-mode',!!on);
   var view=$('collections-inner');if(view)view.hidden=!on;
-  var btn=$('btn-collections');if(btn)btn.classList.toggle('is-on',!!on);
   if(on)loadCollectionsManager();
 }
 // The detail pane is always laid out; only its form/hint swap. (It used to be
@@ -1257,6 +1302,7 @@ function createCollection(){
     v('coll-new-name','');v('coll-new-slug','');
     hideCreateCollection();
     loadCollectionsManager();
+    refreshCollections().then(buildCollectionSelect);
   });
 }
 function selectCollection(id){
@@ -1322,7 +1368,7 @@ function assignCurrentProductToCollection(){
   var c=STATE.collections.find(function(x){return x.id===_selectedCollId;});
   if(c){STATE.collSlug=c.slug;}
   toast('Assigned \u2014 publish to save','ok');
-  setDirty(true);updateAutoPreview();loadCollectionsManager();
+  syncCollectionSelect();markChange();updateAutoPreview();loadCollectionsManager();
 }
 
 // ── BRANDS ──────────────────────────────────────────────────────
@@ -1340,7 +1386,8 @@ function onBrandChange(brand){
   });
   STATE.collSlug=matched?matched.slug:slug;
   STATE.collectionId=matched?matched.id:null;
-  updateAutoPreview();autoSeo();takeSnap();
+  syncCollectionSelect();
+  updateAutoPreview();autoSeo();markChange();
 }
 
 // ── AUTO-GENERATION ─────────────────────────────────────────────
@@ -2187,6 +2234,7 @@ async function loadProduct(id){
   if(qu)qu.value=DEFAULT_QUALITY_USED;
 
   // Tags, chips, tables, images
+  syncCollectionSelect();
   renderTags('modules');
   renderTags('oerefs');
   renderTags('productTags');
@@ -2285,6 +2333,7 @@ function newProduct(){
 function clearForm(){
   STATE.brand='';STATE.model='';STATE.year='';STATE.mpn='';
   STATE.customSlug='';STATE._prevAutoSlug='';STATE._priceDisplay='';
+  syncCollectionSelect();
   STATE.modules=[];STATE.oerefs=[];STATE.productTags=[];
   STATE.compatRows=[];STATE.images=[];
   STATE.seoTitle='';STATE.seoDesc='';STATE.seoManual=false;
@@ -3545,6 +3594,7 @@ function repopulateForm(){
   renderDeliveryRows();
   renderBadgeEditors();
   syncBadgeInputs();
+  syncCollectionSelect();
   renderImageGrid();
   renderFeaturedResult();
   updateStockBadge();
