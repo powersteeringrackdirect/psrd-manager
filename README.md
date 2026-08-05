@@ -35,6 +35,14 @@ Never edit the `APP_HTML` literal in `psrd-worker.js` by hand — `build.js` ove
    - `APP_PASS` — the password typed at the app's gate
 3. Open the Worker URL and sign in.
 
+Optionally add a third secret to switch on **Look up online** in the compatibility table:
+
+- `ANTHROPIC_API_KEY` — a key from [console.anthropic.com](https://console.anthropic.com)
+
+Everything else works without it; the button just reports that the key is missing. Each
+lookup is one billed Claude request with web search, so it is a button you press rather than
+something that runs on its own.
+
 ## Routes
 
 | Route | Purpose |
@@ -42,6 +50,7 @@ Never edit the `APP_HTML` literal in `psrd-worker.js` by hand — `build.js` ove
 | `GET /` | the app |
 | `POST /api/login` | verifies the gate password against `APP_PASS` |
 | `GET /api/fetch?url=…` | server-side image fetch, so pasted image URLs aren't blocked by CORS |
+| `POST /api/verify-mpn` | web search for a part number's vehicle fitments (needs `ANTHROPIC_API_KEY`) |
 | `* /api/ghl/<path>` | proxied to `services.leadconnectorhq.com` with auth headers injected |
 
 Everything under `/api/` except `/api/login` requires the `X-PSRD-Key` header.
@@ -77,6 +86,21 @@ back to scraping the rendered table for older products. It is cached in `localSt
 dropped and reported, never inserted.
 
 Compatibility feeds nothing else — not the product name, not the SKU, not the SEO fields.
+
+**Look up online** covers the case the list above cannot: a part number that is genuinely new,
+so it is in no catalog and no cross-reference table. It sends the number to the Worker, which
+asks Claude to search the web for it and return structured fitment rows with their sources.
+
+It behaves differently from **Auto-fill from MPN** on purpose:
+
+- Nothing is written into the table. Results appear as a proposal with the pages they came
+  from, and you choose **Replace table**, **Add missing** or **Dismiss**.
+- Every row still goes through `validateFitmentRow()` first. Rows with an unknown make, prose
+  in the model field or a vague year ("around 2010") are dropped, and the count is shown so a
+  quiet drop can't be mistaken for a complete answer.
+- If the number isn't found, it says so rather than offering a near-miss.
+
+It costs one Claude request per press, so it is a deliberate action, never automatic.
 
 **SKU** is your product feed ID, so the app treats it as the product's identity rather than
 something to regenerate. On an existing product it is read from the GHL price record and
