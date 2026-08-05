@@ -60,23 +60,39 @@ table, so editing fitments can never rewrite your listing:
 Editing either field by hand sets `seoManual` and the generator stops overwriting it;
 **Re-generate** resumes automatic mode.
 
-**Vehicle compatibility** auto-fill is fully deterministic — no AI — and always leaves the
-table populated. It resolves in confidence order and never discards rows you typed:
+**Vehicle compatibility** fills itself from what you type. As you enter Brand, Model,
+Year range and Driver side, the table mirrors them — no button, never empty. Separate models
+with a comma or a slash (`Q5, SQ5`) to get one row each; a plain space is left alone so
+`Crafter II` stays one model.
+
+The moment you edit any cell, add a row or remove one, it stops following and the rows are
+yours. **Rebuild from the fields above** appears at that point if you want to hand it back.
+A product loaded from GHL keeps its saved table and never follows the fields.
+
+**Add matches from catalog** is optional and only ever *adds*. If this part number, or one of
+its cross-references, is already on another product in your store, it brings those vehicles in
+alongside your rows. It resolves in confidence order:
 
 1. `exact` — this part number is already in the catalog
 2. `cross-ref` — one of this product's own OE numbers is in the catalog
 3. `platform` — the hand-curated `PLATFORM_DB` table, keyed by part-number family
 4. `family` — inferred from catalog siblings sharing a family prefix
-5. seed — a single row built from Brand / Model / Year, flagged for you to check
 
 The catalog index is built in the background by reading each product individually (GHL's
 list endpoint omits `description`), preferring the structured compatibility rows and falling
 back to scraping the rendered table for older products. It is cached in `localStorage` for
 24 hours. Every row from every source must pass `validateFitmentRow()`: a known make, a real
 4-digit year or year range, a plausible model, and a valid drive side. Rows that fail are
-dropped and reported, never inserted.
+dropped, never inserted.
 
 Compatibility feeds nothing else — not the product name, not the SKU, not the SEO fields.
+
+**Top badges** are edited as one list in the order the product page renders them — tax,
+condition, quality, warranty, driver side — with each badge's live chip on the same row as the
+control that sets it. Condition is derived from the Condition buttons and has no input of its
+own. Quality and driver side show their derived default as a *placeholder*, so an empty box
+means "use the default" and a filled one is your override. The returns window lives in
+**Delivery & returns**, next to the paragraph it is written into.
 
 **SKU** is your product feed ID, so the app treats it as the product's identity rather than
 something to regenerate. On an existing product it is read from the GHL price record and
