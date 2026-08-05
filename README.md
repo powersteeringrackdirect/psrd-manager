@@ -12,6 +12,8 @@ API, so the GHL private token never reaches the browser.
 | `psrd-app.html` | **The source for everything the browser sees** — markup, styles and app JS. Edit this. |
 | `build.js` | Inlines `psrd-app.html` into the `APP_HTML` literal at the bottom of `psrd-worker.js`. |
 | `psrd-worker.js` | The deployable Worker: routes, GHL proxy, and the generated `APP_HTML`. |
+| `wrangler.jsonc` | Deploy config. `name` must stay `psrd-manager` — it has to match the Worker in the dashboard or the build is rejected. |
+| `package.json` | Pins Wrangler and provides `npm run build` / `check` / `deploy`. |
 
 `psrd-worker.js` remains a single paste-and-deploy file. It just isn't hand-edited any more —
 the UI lives in `psrd-app.html` so changes are reviewable as an ordinary diff.
@@ -22,10 +24,13 @@ the UI lives in `psrd-app.html` so changes are reviewable as an ordinary diff.
 # 1. edit psrd-app.html
 # 2. regenerate the worker (verifies the literal round-trips back to the HTML)
 node build.js
-# 3. paste psrd-worker.js into the Cloudflare Worker editor and deploy
+# 3. deploy (either one)
+npx wrangler deploy               # from the command line
+#   ...or paste psrd-worker.js into the Cloudflare Worker editor
 ```
 
 Never edit the `APP_HTML` literal in `psrd-worker.js` by hand — `build.js` overwrites it.
+`node build.js --check` fails if `psrd-worker.js` was left stale; run it before committing.
 
 ## Deploy / setup
 
@@ -34,6 +39,23 @@ Never edit the `APP_HTML` literal in `psrd-worker.js` by hand — `build.js` ove
    - `GHL_TOKEN` — the GHL Private Integration Token (`pit-…`)
    - `APP_PASS` — the password typed at the app's gate
 3. Open the Worker URL and sign in.
+
+Secrets are never removed by a deploy, so they only need setting once.
+
+### Deploying from GitHub (Workers Builds)
+
+If the Worker is connected to this repository under **Settings → Builds**:
+
+| Setting | Value |
+|---|---|
+| Git branch | `main` |
+| Build command | `node build.js` |
+| Deploy command | `npx wrangler deploy` |
+
+The build fails without `wrangler.jsonc`, and it fails again if the `name` in that file
+does not match the Worker's name in the dashboard. Both are correct in this repo.
+Pushing to the watched branch is what triggers a deploy — work sitting on another branch
+is never built.
 
 ## Routes
 

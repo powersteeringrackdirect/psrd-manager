@@ -27,11 +27,25 @@ function literalOf(worker) {
   return { head: worker.slice(0, i), literal: worker.slice(i + MARKER.length).replace(/;\s*$/, '') };
 }
 
+// --check verifies the committed worker already matches psrd-app.html without
+// writing anything, so CI can catch a psrd-worker.js that was left stale.
+const CHECK = process.argv.includes('--check');
+
 try {
   const html = fs.readFileSync(APP, 'utf8');
-  const { head } = literalOf(fs.readFileSync(WORKER, 'utf8'));
+  const before = fs.readFileSync(WORKER, 'utf8');
+  const { head } = literalOf(before);
+  const rebuilt = head + MARKER + toLiteral(html) + ';\n';
 
-  fs.writeFileSync(WORKER, head + MARKER + toLiteral(html) + ';\n');
+  if (CHECK) {
+    if (rebuilt !== before) {
+      throw new Error('psrd-worker.js is out of date — run `node build.js` and commit the result');
+    }
+    console.log('psrd-worker.js is up to date with psrd-app.html');
+    process.exit(0);
+  }
+
+  fs.writeFileSync(WORKER, rebuilt);
 
   // Round-trip check: the literal we just wrote must decode back to psrd-app.html exactly.
   const { literal } = literalOf(fs.readFileSync(WORKER, 'utf8'));
