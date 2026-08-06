@@ -14,9 +14,8 @@
   // never touch secrets, so they survive every build.
   "keep_vars": true,
 
-  "observability": { "enabled": true }
-}
-{
+  // Logs on and persisted, traces off. This is one object: a second top-level
+  // {...} appended below the first is not valid JSON and fails the build.
   "observability": {
     "enabled": false,
     "head_sampling_rate": 1,
