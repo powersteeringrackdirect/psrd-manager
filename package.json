@@ -1,0 +1,14 @@
+{
+  "name": "psrd-manager",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Power Steering Rack Direct product manager - Cloudflare Worker",
+  "scripts": {
+    "build": "node build.js",
+    "check": "node build.js --check",
+    "deploy": "node build.js && wrangler deploy"
+  },
+  "devDependencies": {
+    "wrangler": "^4.68.0"
+  }
+}

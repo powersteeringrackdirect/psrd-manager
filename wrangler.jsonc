@@ -1,0 +1,18 @@
+{
+  // "name" MUST match the Worker name in the Cloudflare dashboard, or the build
+  // is rejected before it starts. This Worker is "psrd-manager".
+  "name": "psrd-manager",
+  "main": "psrd-worker.js",
+  "compatibility_date": "2026-08-01",
+
+  // Served from the *.workers.dev subdomain. No custom routes are declared here
+  // on purpose: Wrangler treats this file as the source of truth for routes, so
+  // listing none leaves the dashboard's routing alone.
+  "workers_dev": true,
+
+  // GHL_TOKEN and APP_PASS stay Worker secrets set in the dashboard. Deploys
+  // never touch secrets, so they survive every build.
+  "keep_vars": true,
+
+  "observability": { "enabled": true }
+}
