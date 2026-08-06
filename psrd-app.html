@@ -963,7 +963,7 @@ var STATE={
   warrantyMonths:DEFAULT_WARRANTY_USED,returnsDays:DEFAULT_RETURNS_DAYS,
   modules:[],oerefs:[],productTags:[],
   compatRows:[],compatAuto:true,deliveryRows:[],images:[],
-  featImg:{url:'',uploadedUrl:'',gmcAlt:'',iptcKeywords:[]},
+  featImg:{url:'',uploadedUrl:'',gmcAlt:'',type:'image',iptcKeywords:[]},
   seoTitle:'',seoDesc:'',seoKeywords:'',
   collectionIdsAll:[],_rawProd:null,
   dirty:false
@@ -1870,7 +1870,7 @@ function resetState(){
   STATE.modules=[];STATE.oerefs=[];STATE.productTags=[];
   STATE.qualityBadge='';STATE.driveBadge='';STATE.taxBadge='NO VAT';STATE.sku='';STATE._loadedSku='';STATE.skuEdited=false;STATE.skuLocked=true;
   STATE.compatRows=[];STATE.compatAuto=true;STATE.deliveryRows=[];STATE.images=[];
-  STATE.featImg={url:'',uploadedUrl:'',mediaId:'',gmcAlt:'',iptcKeywords:[]};
+  STATE.featImg={url:'',uploadedUrl:'',mediaId:'',gmcAlt:'',type:'image',iptcKeywords:[]};
   STATE.seoTitle='';STATE.seoDesc='';STATE.seoKeywords='';STATE.seoManual=false;
   STATE.collectionIdsAll=[];STATE._rawProd=null;
   STATE.dirty=false;
@@ -1955,7 +1955,9 @@ function populateMetaOnlyFields(meta){
   }
   // Image metadata only (NOT the URL — that comes from GHL prod.image)
   if(meta.featImg){
-    if(meta.featImg.gmcAlt)                    STATE.featImg.gmcAlt        =meta.featImg.gmcAlt;
+    // Only fill a gap. The live media title in GHL is the real alt text; this
+    // blob is a stale copy from whenever the product was last published here.
+    if(meta.featImg.gmcAlt&&!STATE.featImg.gmcAlt)STATE.featImg.gmcAlt      =meta.featImg.gmcAlt;
     if(Array.isArray(meta.featImg.iptcKeywords))STATE.featImg.iptcKeywords =meta.featImg.iptcKeywords.slice();
     // featImg.url kept for AI re-generation reference only
     if(meta.featImg.url&&!STATE.featImg.url)   STATE.featImg.url           =meta.featImg.url;
@@ -2193,7 +2195,13 @@ async function loadProduct(id){
   STATE.featImg.mediaId='';
   if(Array.isArray(prod.medias)){
     var fmFeat=prod.medias.find(function(m){return m.isFeatured||m.featured||m.url===prod.image;});
-    if(fmFeat)STATE.featImg.mediaId=fmFeat.id||mediaIdFromUrl(fmFeat.url)||'';
+    if(fmFeat){
+      STATE.featImg.mediaId=fmFeat.id||mediaIdFromUrl(fmFeat.url)||'';
+      // The title you wrote in GHL is the alt text. Read it, or publish would
+      // regenerate one and overwrite what is already there.
+      if(fmFeat.title)STATE.featImg.gmcAlt=fmFeat.title;
+      if(fmFeat.type)STATE.featImg.type=fmFeat.type;
+    }
   }
   if(!STATE.featImg.mediaId)STATE.featImg.mediaId=mediaIdFromUrl(prod.image);
   if(!STATE.featImg.uploadedUrl)warnings.push('No featured image stored in GHL');
@@ -2204,8 +2212,9 @@ async function loadProduct(id){
       // the featured media is shown in the dedicated Featured slot, not the gallery
       return !(m.isFeatured||m.featured)&&m.url!==prod.image;
     }).map(function(m){
+      // Keep the media type GHL gave us — a video must not go back as an image.
       return{id:genId(),mediaId:m.id||null,url:m.url||'',uploadedUrl:m.url||'',
-             alt:m.title||'',featured:false};
+             alt:m.title||'',type:m.type||'image',featured:false};
     });
   }
 
@@ -2444,7 +2453,7 @@ function clearForm(){
   STATE.compatRows=[];STATE.compatAuto=true;STATE.images=[];
   STATE.seoTitle='';STATE.seoDesc='';STATE.seoManual=false;
   STATE.availableInStore=true;STATE.trackInventory=false;STATE.stockQty=0;
-  STATE.featImg={url:'',uploadedUrl:'',mediaId:'',gmcAlt:'',iptcKeywords:[]};
+  STATE.featImg={url:'',uploadedUrl:'',mediaId:'',gmcAlt:'',type:'image',iptcKeywords:[]};
   STATE.descNote=DEFAULT_DESC_USED;STATE.footerNote=DEFAULT_FOOTER_USED;
   STATE.warrantyMonths=DEFAULT_WARRANTY_USED;STATE.returnsDays=DEFAULT_RETURNS_DAYS;STATE.cta1='Search part';
   STATE.cta2='Fitment check';STATE.cta3='Tech support';
@@ -2480,7 +2489,7 @@ function duplicateProduct(){
     seoTitle:STATE.seoTitle,seoDesc:STATE.seoDesc,_priceDisplay:STATE._priceDisplay
   }));
   STATE.current=null;STATE.isNew=true;STATE.priceId=null;
-  STATE.images=[];STATE.featImg={url:'',uploadedUrl:'',mediaId:'',gmcAlt:'',iptcKeywords:[]};
+  STATE.images=[];STATE.featImg={url:'',uploadedUrl:'',mediaId:'',gmcAlt:'',type:'image',iptcKeywords:[]};
   STATE._rawProd=null;STATE.collectionIdsAll=[];STATE.seoKeywords='';
   Object.assign(STATE,snap);
   STATE.mpn='';STATE.customSlug='';STATE._prevAutoSlug='';
@@ -3319,13 +3328,20 @@ async function publishProduct(){
   // GHL validates that every media entry carries its media-library id
   var medias=[];
   var featMediaId=STATE.featImg.mediaId||mediaIdFromUrl(featUrl);
-  if(featUrl&&featMediaId)medias.push({id:featMediaId,url:featUrl,title:STATE.featImg.gmcAlt||buildGmcAlt(),type:'image',isFeatured:true});
+  if(featUrl&&featMediaId)medias.push({id:featMediaId,url:featUrl,title:STATE.featImg.gmcAlt||buildGmcAlt(),type:STATE.featImg.type||'image',isFeatured:true});
   galleryImgs.forEach(function(im){
     if(im.uploadedUrl===featUrl)return;
     var mid=im.mediaId||mediaIdFromUrl(im.uploadedUrl);
     if(!mid){console.warn('[medias] skipped (no media id):',im.uploadedUrl);return;}
-    medias.push({id:mid,url:im.uploadedUrl,title:im.alt||buildGmcAlt(),type:'image',isFeatured:false});
+    medias.push({id:mid,url:im.uploadedUrl,title:im.alt||buildGmcAlt(),type:im.type||'image',isFeatured:false});
   });
+  // Never hand GHL an empty media list for a product that already has media —
+  // that would clear the gallery. If nothing resolved, leave the field alone.
+  var rawMedias=(STATE._rawProd&&Array.isArray(STATE._rawProd.medias))?STATE._rawProd.medias:[];
+  if(!medias.length&&rawMedias.length){
+    console.warn('[medias] nothing resolved — keeping the '+rawMedias.length+' already in GHL');
+    medias=null;
+  }
   var raw=STATE._rawProd||{};
   // Start from every field GHL sent us, minus the ones it computes itself, so a
   // field this editor knows nothing about survives an update instead of being
@@ -3343,13 +3359,14 @@ async function publishProduct(){
     description:productHtml,
     slug:(STATE.slugLocked&&raw.slug)?raw.slug:slug,
     availableInStore:STATE.availableInStore,
-    medias:medias,
+
     seo:{
       title:STATE.seoTitle||gv('f-seo-title'),
       description:STATE.seoDesc||gv('f-seo-desc'),
       keywords:STATE.seoKeywords||buildIptcKeywords().join(', ')
     }
   });
+  if(medias)productPayload.medias=medias;
   if(featUrl)productPayload.image=featUrl;
   if(collIds.length)productPayload.collectionIds=collIds;
 
