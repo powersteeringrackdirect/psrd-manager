@@ -591,7 +591,17 @@ button{min-height:34px}
                 </div>
                 <div class="field">
                   <label class="label" for="f-label-title">Label text</label>
-                  <input id="f-label-title" type="text" value="New" placeholder="e.g. New" oninput="STATE.labelTitle=this.value;markChange()">
+                  <input id="f-label-title" type="text" placeholder="e.g. New" oninput="STATE.labelTitle=this.value;markChange()">
+                </div>
+              </div>
+              <div class="row row-2">
+                <div class="field">
+                  <label class="label" for="f-label-from">Valid from <span class="hint">— optional</span></label>
+                  <input id="f-label-from" type="date" oninput="STATE.labelStart=this.value;markChange()">
+                </div>
+                <div class="field">
+                  <label class="label" for="f-label-to">Valid to <span class="hint">— optional</span></label>
+                  <input id="f-label-to" type="date" oninput="STATE.labelEnd=this.value;markChange()">
                 </div>
               </div>
 
@@ -944,7 +954,7 @@ var STATE={
   condition:'used',drive:'RHD',
   availableInStore:true,
   collSlug:'',collectionId:null,
-  customSlug:'',slugLocked:false,taxBadge:'NO VAT',labelEnabled:true,labelTitle:'New',_priceDisplay:'',
+  customSlug:'',slugLocked:false,taxBadge:'NO VAT',labelEnabled:false,labelTitle:'',labelStart:'',labelEnd:'',labelTouched:false,_loadedLabel:null,_priceDisplay:'',
   price:0,priceId:null,
   trackInventory:false,stockQty:0,
   descNote:DEFAULT_DESC_USED,
@@ -1366,7 +1376,17 @@ function onBrandChange(brand){
     return c.name.toLowerCase()===brand.toLowerCase()||c.slug===slug;
   });
   STATE.collSlug=matched?matched.slug:slug;
+  // Swap the brand's collection rather than stacking a second one on top: the old
+  // brand collection used to stay in collectionIdsAll, leaving the product filed
+  // under both makes after a publish.
+  var prevBrandColl=STATE.collectionId;
   STATE.collectionId=matched?matched.id:null;
+  if(prevBrandColl&&prevBrandColl!==STATE.collectionId){
+    STATE.collectionIdsAll=(STATE.collectionIdsAll||[]).filter(function(x){return x!==prevBrandColl;});
+  }
+  if(STATE.collectionId&&(STATE.collectionIdsAll||[]).indexOf(STATE.collectionId)<0){
+    STATE.collectionIdsAll.unshift(STATE.collectionId);
+  }
   syncCollectionSelect();
   syncCompatFromFields();
   updateAutoPreview();autoSeo();markChange();
@@ -1839,6 +1859,7 @@ function resetState(){
   STATE.partType=DEFAULT_PART_TYPE;STATE.condition='used';STATE.drive='RHD';
   STATE.availableInStore=true;STATE._driveFromMeta=false;STATE._partTypeFromMeta=false;
   STATE.qualityBadge='';STATE.driveBadge='';STATE.sku='';STATE._loadedSku='';STATE.skuEdited=false;STATE.skuLocked=true;
+  STATE.labelEnabled=false;STATE.labelTitle='';STATE.labelStart='';STATE.labelEnd='';STATE.labelTouched=false;STATE._loadedLabel=null;
   STATE.collSlug='';STATE.collectionId=null;
   STATE.customSlug='';STATE.slugLocked=false;STATE.taxBadge='NO VAT';STATE._priceDisplay='';STATE._priceName='';
   STATE.priceId=null;STATE.trackInventory=false;STATE.stockQty=0;
@@ -2146,9 +2167,15 @@ async function loadProduct(id){
   // Slug (GHL native)
   STATE.customSlug=prod.slug||'';
   STATE.slugLocked=true;                                   // existing slugs are protected
+  // Product label — all four GHL fields, taken exactly as GHL holds them and
+  // never inferred from anything else in the form.
+  var gLabel=prod.label||{};
   STATE.labelEnabled=!!prod.isLabelEnabled;
-  STATE.labelTitle=(prod.label&&prod.label.title)||'';
-  v('f-label-title',STATE.labelTitle);
+  STATE.labelTitle  =gLabel.title||'';
+  STATE.labelStart  =_dateForInput(gLabel.startDate);
+  STATE.labelEnd    =_dateForInput(gLabel.endDate);
+  STATE._loadedLabel=prod.label?JSON.parse(JSON.stringify(prod.label)):null;
+  syncLabelInputs();
   setLabelEnabled(STATE.labelEnabled,true);
   syncSlugLockUi();
   if(!STATE.customSlug)warnings.push('No URL slug set in GHL');
@@ -2333,8 +2360,36 @@ function setLabelEnabled(on,silent){
   document.querySelectorAll('#label-seg button').forEach(function(b){
     b.classList.toggle('is-on',(b.dataset.v==='on')===STATE.labelEnabled);
   });
-  var inp=$('f-label-title');if(inp)inp.disabled=!STATE.labelEnabled;
-  if(!silent)markChange();
+  ['f-label-title','f-label-from','f-label-to'].forEach(function(id){
+    var el=$(id);if(el)el.disabled=!STATE.labelEnabled;
+  });
+  // Switching the label off is a deliberate act, and the only thing that lets
+  // publish send isLabelEnabled:false. Remember it so an incidental re-render
+  // can never turn a live label off by itself.
+  if(!silent){STATE.labelTouched=true;markChange();}
+}
+// GHL stores label dates as ISO strings; <input type="date"> wants yyyy-mm-dd.
+function _dateForInput(v){
+  if(!v)return '';
+  var s=String(v);
+  var m=s.match(/^(\d{4}-\d{2}-\d{2})/);
+  if(m)return m[1];
+  var d=new Date(s);
+  return isNaN(d)?'':d.toISOString().slice(0,10);
+}
+function syncLabelInputs(){
+  v('f-label-title',STATE.labelTitle||'');
+  v('f-label-from',STATE.labelStart||'');
+  v('f-label-to',STATE.labelEnd||'');
+}
+// Rebuilds the label object for publish: starts from exactly what GHL sent, so
+// any key this editor does not know about is carried through untouched.
+function buildLabelPayload(){
+  var out=Object.assign({},STATE._loadedLabel||{});
+  out.title=(STATE.labelTitle||'').trim();
+  if(STATE.labelStart)out.startDate=STATE.labelStart;else delete out.startDate;
+  if(STATE.labelEnd)  out.endDate  =STATE.labelEnd;  else delete out.endDate;
+  return out;
 }
 function setTrackInventory(track,silent){
   STATE.trackInventory=!!track;
@@ -2380,6 +2435,10 @@ function clearForm(){
   STATE.customSlug='';STATE._prevAutoSlug='';STATE._priceDisplay='';
   // The SKU is the feed ID of one specific product — never let it carry over.
   STATE.sku='';STATE._loadedSku='';STATE.skuEdited=false;STATE.skuLocked=false;
+  // Same for the product label: it is per-product data owned by GHL.
+  STATE.labelEnabled=false;STATE.labelTitle='';STATE.labelStart='';STATE.labelEnd='';
+  STATE.labelTouched=false;STATE._loadedLabel=null;
+  syncLabelInputs();setLabelEnabled(false,true);
   syncCollectionSelect();
   STATE.modules=[];STATE.oerefs=[];STATE.productTags=[];
   STATE.compatRows=[];STATE.compatAuto=true;STATE.images=[];
@@ -2495,10 +2554,9 @@ function setCondition(val,triggerDefaults){
     STATE.warrantyMonths=val==='new'?DEFAULT_WARRANTY_NEW:DEFAULT_WARRANTY_USED;
     STATE.descNote=val==='new'?DEFAULT_DESC_NEW:DEFAULT_DESC_USED;
     STATE.footerNote=val==='new'?DEFAULT_FOOTER_NEW:DEFAULT_FOOTER_USED;
-    STATE.labelEnabled=(val==='new');
-    STATE.labelTitle=val==='new'?'New':'';
-    v('f-label-title',STATE.labelTitle);
-    if(typeof setLabelEnabled==='function')setLabelEnabled(STATE.labelEnabled,!triggerDefaults);
+    // The product label is GHL's data, not something derived from Condition.
+    // This used to blank labelTitle and flip labelEnabled here, which then got
+    // written back over the label on the next publish.
     autoSeo();
     v('f-desc-note',STATE.descNote);v('f-footer-note',STATE.footerNote);
     v('f-warranty',String(STATE.warrantyMonths));   // the box has to follow the value it just set
@@ -3269,7 +3327,16 @@ async function publishProduct(){
     medias.push({id:mid,url:im.uploadedUrl,title:im.alt||buildGmcAlt(),type:'image',isFeatured:false});
   });
   var raw=STATE._rawProd||{};
-  var productPayload={
+  // Start from every field GHL sent us, minus the ones it computes itself, so a
+  // field this editor knows nothing about survives an update instead of being
+  // dropped. Everything below then overwrites only what the editor manages.
+  var SERVER_OWNED=['_id','id','createdAt','updatedAt','traceId','rating',
+                    'variantsLength','hasVariants','hasPrices','prices'];
+  var productPayload={};
+  Object.keys(raw).forEach(function(k){
+    if(SERVER_OWNED.indexOf(k)<0)productPayload[k]=raw[k];
+  });
+  Object.assign(productPayload,{
     name:name,
     locationId:LOC,
     productType:raw.productType||'PHYSICAL',
@@ -3282,17 +3349,24 @@ async function publishProduct(){
       description:STATE.seoDesc||gv('f-seo-desc'),
       keywords:STATE.seoKeywords||buildIptcKeywords().join(', ')
     }
-  };
+  });
   if(featUrl)productPayload.image=featUrl;
   if(collIds.length)productPayload.collectionIds=collIds;
-  if(raw.isTaxesEnabled!==undefined)productPayload.isTaxesEnabled=raw.isTaxesEnabled;
-  if(Array.isArray(raw.taxes)&&raw.taxes.length)productPayload.taxes=raw.taxes;
-  if(raw.taxInclusive!==undefined)productPayload.taxInclusive=raw.taxInclusive;
-  if(STATE.labelEnabled&&(STATE.labelTitle||'').trim()){
+
+  // ── PRODUCT LABEL ──────────────────────────────────────────────
+  // Send it back the way GHL holds it. The only route to isLabelEnabled:false is
+  // the operator pressing Off; a blank title on a label that is still switched on
+  // never silently disables it, and the label object is never dropped.
+  if(STATE.labelEnabled){
     productPayload.isLabelEnabled=true;
-    productPayload.label=Object.assign({},raw.label||{},{title:STATE.labelTitle.trim()});
-  }else{
+    productPayload.label=buildLabelPayload();
+  }else if(STATE.labelTouched||!STATE._loadedLabel){
     productPayload.isLabelEnabled=false;
+    delete productPayload.label;
+  }else{
+    // Off but never touched here — leave GHL's own values alone entirely.
+    if(raw.isLabelEnabled!==undefined)productPayload.isLabelEnabled=raw.isLabelEnabled;
+    if(raw.label)productPayload.label=raw.label;
   }
   var productId=STATE.current&&STATE.current.id;
   var pRes;
@@ -3421,7 +3495,7 @@ window.addEventListener('resize',function(){
 // products / collections / _rawProd are excluded because they aren't user edits.
 var SNAP_FIELDS=['brand','model','year','mpn','partType','condition','drive',
   'availableInStore','customSlug','slugLocked','taxBadge','_priceDisplay',
-  'trackInventory','stockQty','labelEnabled','labelTitle','descNote','footerNote',
+  'trackInventory','stockQty','labelEnabled','labelTitle','labelStart','labelEnd','labelTouched','descNote','footerNote',
   'cta1','cta2','cta3','warrantyMonths','returnsDays','modules','oerefs','productTags',
   'compatRows','compatAuto','deliveryRows','seoTitle','seoDesc','seoKeywords','seoManual','qualityBadge','driveBadge',
   'collSlug','collectionId'];
@@ -3502,6 +3576,7 @@ function repopulateForm(){
   renderTags('modules');
   renderTags('oerefs');
   renderTags('productTags');
+  syncLabelInputs();setLabelEnabled(STATE.labelEnabled,true);
   renderCompatRows();syncCompatBtn();
   renderDeliveryRows();
   renderBadgeEditors();
