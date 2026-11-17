@@ -955,7 +955,7 @@ var STATE={
   availableInStore:true,
   collSlug:'',collectionId:null,
   customSlug:'',slugLocked:false,taxBadge:'NO VAT',labelEnabled:false,labelTitle:'',labelStart:'',labelEnd:'',labelTouched:false,_loadedLabel:null,_priceDisplay:'',
-  price:0,priceId:null,
+  price:0,priceId:null,_loadedPrice:null,_collPicked:null,
   trackInventory:false,stockQty:0,
   descNote:DEFAULT_DESC_USED,
   cta1:'Tech Support',cta2:'Get Fast Quote',cta3:'Sell Old Rack',
@@ -969,7 +969,7 @@ var STATE={
   dirty:false
 };
 var _compatId=0,_deliveryId=0;
-var _undoStack=[],_redoStack=[];
+var _undoStack=[],_redoStack=[],_loadSnap=null;
 var _selectedCollId=null;
 
 // ── HELPERS ──────────────────────────────────────────────────────
@@ -1212,11 +1212,18 @@ function syncCollectionSelect(){
   sel.value=STATE.collectionId||'';
 }
 function onCollectionChange(id){
-  STATE.collectionId=id||null;
-  var c=STATE.collections.find(function(x){return x.id===id;});
-  STATE.collSlug=c?c.slug:'';
-  STATE.collectionIdsAll=(STATE.collectionIdsAll||[]).filter(function(x){return x!==id;});
+  // The picker is a single "primary collection" control: switching SWAPS the previously picked
+  // id out (it must not linger and resurrect at publish), and "— none —" is a real choice
+  // that removes it. Memberships the operator never touched through this control are kept.
+  var prev=STATE.collectionId;
+  id=id||null;
+  STATE.collectionIdsAll=(STATE.collectionIdsAll||[]).filter(function(x){return x!==prev&&x!==id;});
   if(id)STATE.collectionIdsAll.unshift(id);
+  STATE.collectionId=id;
+  // Remember the explicit pick so publish never re-files the product behind the operator's back.
+  STATE._collPicked=id?'id':'none';
+  var c=id?STATE.collections.find(function(x){return x.id===id;}):null;
+  STATE.collSlug=c?c.slug:'';
   updateAutoPreview();markChange();
 }
 function findCollectionId(brand){
@@ -1324,7 +1331,9 @@ function saveCollection(){
     seo:{title:gv('coll-seo-title'),description:gv('coll-seo-desc')}
   };
   var img=(gv('coll-image')||'').trim();
-  if(img)body.image=img;
+  // Send the image whenever it differs from what GHL holds: clearing the box must be able to
+  // actually clear it — omitting the field would silently keep the old image.
+  if(img!==(c.image||''))body.image=img;
   ghlFetch('PUT','/products/collections/'+_selectedCollId,body).then(function(r){
     if(!r.ok){
       var m=(r.data&&(r.data.message||r.data.error))||('HTTP '+r.status);
@@ -1356,6 +1365,7 @@ function assignCurrentProductToCollection(){
   STATE.collectionIdsAll=(STATE.collectionIdsAll||[]).filter(function(c){return c!==_selectedCollId&&c!==STATE.collectionId;});
   STATE.collectionIdsAll.unshift(_selectedCollId);
   STATE.collectionId=_selectedCollId;
+  STATE._collPicked='id';
   var c=STATE.collections.find(function(x){return x.id===_selectedCollId;});
   if(c){STATE.collSlug=c.slug;}
   toast('Assigned \u2014 publish to save','ok');
@@ -1387,6 +1397,7 @@ function onBrandChange(brand){
   if(STATE.collectionId&&(STATE.collectionIdsAll||[]).indexOf(STATE.collectionId)<0){
     STATE.collectionIdsAll.unshift(STATE.collectionId);
   }
+  if(STATE.collectionId)STATE._collPicked='id';
   syncCollectionSelect();
   syncCompatFromFields();
   updateAutoPreview();autoSeo();markChange();
@@ -1416,6 +1427,7 @@ function onSkuInput(val){
 function toggleSkuLock(){
   STATE.skuLocked=!STATE.skuLocked;
   syncSkuLockUi();
+  markChange();
 }
 function syncSkuLockUi(){
   var inp=$('f-sku-display'),btn=$('btn-sku-lock');
@@ -1476,7 +1488,7 @@ function resetSlug(){
   var auto=slugify(name);
   v('f-slug',auto);
   STATE.customSlug=auto;
-  updateAutoPreview();
+  updateAutoPreview();markChange();
 }
 function updateAutoPreview(){
   var name=buildName(),sku=currentSku();
@@ -1506,7 +1518,7 @@ function updateAutoPreview(){
 // OEM numbering encodes the platform (8R→Q5, 2N→Crafter, 4K→A6 C8…), so
 // exact cross-refs AND part-number-family prefixes both resolve instantly —
 // no agent, no external API, always in sync with the catalog.
-var FITDB={byPn:{},byPrefix:{},count:0};
+var FITDB={byPn:{},byPrefix:{},count:0,ingested:{}};
 function _fitNormPn(s){return String(s||'').toUpperCase().replace(/[^A-Z0-9]/g,'');}
 // Family key length is brand-scheme aware. VAG's 3rd character encodes the
 // steering side (…1…=LHD, …2…=RHD), so 8R1 and 8R2 are DIFFERENT families.
@@ -1613,8 +1625,11 @@ function _fitPartNumbers(desc,meta){
   }
   return pns;
 }
-function _fitIngestDesc(desc){
+function _fitIngestDesc(desc,id){
   desc=String(desc||'');
+  // Mark the product ingested even when it holds no parseable fitment table, so the index
+  // builder never re-reads a product the list response already covered.
+  if(id)FITDB.ingested[id]=1;
   if(!desc)return;
   var meta=null;
   try{meta=extractMeta(desc);}catch(e){}
@@ -1641,7 +1656,7 @@ var FITDB_CACHE_KEY='psrd_fitdb_v1', FITDB_TTL=24*60*60*1000;
 function saveFitDb(){
   try{
     localStorage.setItem(FITDB_CACHE_KEY,JSON.stringify(
-      {builtAt:Date.now(),byPn:FITDB.byPn,byPrefix:FITDB.byPrefix,count:FITDB.count}));
+      {builtAt:Date.now(),byPn:FITDB.byPn,byPrefix:FITDB.byPrefix,count:FITDB.count,ingested:FITDB.ingested}));
   }catch(e){/* quota or private mode — the index just rebuilds next load */}
 }
 function loadFitDb(){
@@ -1651,6 +1666,7 @@ function loadFitDb(){
     var d=JSON.parse(raw);
     if(!d||!d.builtAt||(Date.now()-d.builtAt)>FITDB_TTL)return false;
     FITDB.byPn=d.byPn||{};FITDB.byPrefix=d.byPrefix||{};FITDB.count=d.count||0;
+    FITDB.ingested=d.ingested||{};
     return FITDB.count>0;
   }catch(e){return false;}
 }
@@ -1764,7 +1780,10 @@ function refreshProducts(){
       var batch=r.data.products||[];
       // The list endpoint may or may not carry descriptions. Use them when present;
       // buildFitIndex() fetches the rest.
-      batch.forEach(function(p){if(p.description)try{_fitIngestDesc(p.description);}catch(e){console.warn('[fitdb]',e);}});
+      // The list response may or may not carry the description (docs list it; older builds
+      // observed it missing). Use it when present and mark the product ingested either way;
+      // buildFitIndex() only fetches products nobody has looked at yet.
+      batch.forEach(function(p){if(p.description)try{_fitIngestDesc(p.description,p._id||p.id);}catch(e){console.warn('[fitdb]',e);}});
       all=all.concat(batch.map(function(p){
         return{id:p._id||p.id,name:p.name||'',slug:p.slug||'',availableInStore:p.availableInStore!==false};
       }));
@@ -1788,8 +1807,11 @@ function refreshProducts(){
 var _fitIndexing=false;
 function buildFitIndex(force){
   if(_fitIndexing)return;
-  if(!force&&FITDB.count>=STATE.products.length&&FITDB.count>0)return;   // cache already covers the catalog
-  var todo=STATE.products.map(function(p){return p.id;}).filter(Boolean);
+  // Skip only when every product in the catalog has already been ingested — either from the
+  // list response or from this builder's own per-product reads (also cached for 24h).
+  var allKnown=STATE.products.length>0&&STATE.products.every(function(p){return !p.id||FITDB.ingested[p.id];});
+  if(!force&&allKnown)return;
+  var todo=STATE.products.map(function(p){return p.id;}).filter(function(id){return id&&!FITDB.ingested[id];});
   if(!todo.length)return;
   _fitIndexing=true;
   var done=0,i=0,CONCURRENCY=4;
@@ -1862,7 +1884,7 @@ function resetState(){
   STATE.labelEnabled=false;STATE.labelTitle='';STATE.labelStart='';STATE.labelEnd='';STATE.labelTouched=false;STATE._loadedLabel=null;
   STATE.collSlug='';STATE.collectionId=null;
   STATE.customSlug='';STATE.slugLocked=false;STATE.taxBadge='NO VAT';STATE._priceDisplay='';STATE._priceName='';
-  STATE.priceId=null;STATE.trackInventory=false;STATE.stockQty=0;
+  STATE.priceId=null;STATE.trackInventory=false;STATE.stockQty=0;STATE._loadedPrice=null;STATE._collPicked=null;
   STATE.descNote=DEFAULT_DESC_USED;
   STATE.cta1='Search part';STATE.cta2='Fitment check';STATE.cta3='Tech support';
   STATE.footerNote=DEFAULT_FOOTER_USED;
@@ -2033,17 +2055,28 @@ function populateMetaOnlyFromDoc(doc){
   // ── TEXT CONTENT ──
   var intro=doc.querySelector('.description-note p.intro')||doc.querySelector('.description-note .intro');
   if(intro)STATE.descNote=intro.textContent.trim();
-  // Footer note: prefer the "Old rack?" paragraph, else last p.note without a link
-  var fNote='',oldRack='';
+  // Footer note. The page ends with five FIXED renderer notes (VIN check, customs,
+  // express shipping, returns, warranty) followed by the operator's footer. "last note that
+  // has no link" was wrong for any custom footer ending in the "get in touch" link — the
+  // WARRANTY text then loaded as the footer and the next publish wrote it to the live page.
+  // Instead: the footer is the LAST note that is not one of the fixed strings.
+  var FIXED_NOTE_RE=[
+    /can'?t find your model/i,           // VIN check
+    /^buyer is responsible for all customs/i,
+    /^express shipping available/i,
+    /^returns accepted within \d{1,3} days/i,
+    /^warranty: \d/i
+  ];
+  var fNote='';
   doc.querySelectorAll('p.note').forEach(function(p){
     var t=p.textContent.trim();if(!t)return;
-    if(/old rack/i.test(t))oldRack=t;
-    if(!p.querySelector('a'))fNote=t;
+    var isFixed=FIXED_NOTE_RE.some(function(re){return re.test(t);});
+    if(!isFixed)fNote=t;
     // returns window ("Returns accepted within 14 days")
     var rm=t.match(/within\s+(\d{1,3})\s+days/i);
     if(rm&&/return/i.test(t))STATE.returnsDays=parseInt(rm[1]);
   });
-  if(oldRack)STATE.footerNote=oldRack;else if(fNote)STATE.footerNote=fNote;
+  if(fNote)STATE.footerNote=fNote;
 
   // ── BADGES ──
   doc.querySelectorAll('.bdg').forEach(function(b){
@@ -2129,6 +2162,9 @@ function fillFromName(name){
 async function loadProduct(id){
   if(STATE.dirty&&!confirm('Unsaved changes will be lost. Continue?'))return;
   resetState();
+  // Undo history belongs to ONE product: leaving the previous product's snapshots in place let
+  // Ctrl+Z pull product A's fields into product B's editor and publish them there (review F10).
+  _undoStack.length=0;_redoStack.length=0;_loadSnap=null;
   STATE.current={id:id};
   STATE.isNew=false;
   enableButtons(false);
@@ -2229,6 +2265,7 @@ async function loadProduct(id){
     if(pArr.length){
       var fp=pArr[0];
       STATE.priceId        =fp._id||fp.id||null;
+      STATE._loadedPrice   =fp;   // whole record kept: publish round-trips fields this UI never manages
       STATE._priceDisplay  =fp.amount!=null?String(fp.amount):'';
       STATE._priceName     =fp.name||'';
       STATE.sku            =fp.sku||'';        // the real SKU on the price record
@@ -2339,6 +2376,7 @@ async function loadProduct(id){
   updateTitle(nm);
   $('publish-status').textContent='Editing: '+nm.slice(0,60);
   takeSnap();
+  _loadSnap=_undoStack[_undoStack.length-1];   // load-time baseline: undo-to-here means "clean"
   setDirty(false);
   $('empty').style.display='none';
   var _ei=$('editor-inner');if(_ei)_ei.style.display='flex';
@@ -2391,13 +2429,34 @@ function syncLabelInputs(){
   v('f-label-from',STATE.labelStart||'');
   v('f-label-to',STATE.labelEnd||'');
 }
+// GHL holds label dates as full ISO timestamps — the API docs specify "YYYY-MM-DDTHH:mm:ssZ"
+// with example 2024-06-26T05:43:35.000Z — while <input type="date"> yields bare YYYY-MM-DD.
+// Stretch date-only values to the documented format so GHL never has to guess the time of day:
+// the window runs from midnight UTC on the "valid from" day to the last instant of the "to" day.
+function _isoLabelDate(v,endOfDay){
+  var s=String(v||'').trim();
+  if(!s)return '';
+  if(/^\d{4}-\d{2}-\d{2}$/.test(s))return s+(endOfDay?'T23:59:59.999Z':'T00:00:00.000Z');
+  return s;
+}
 // Rebuilds the label object for publish: starts from exactly what GHL sent, so
 // any key this editor does not know about is carried through untouched.
 function buildLabelPayload(){
   var out=Object.assign({},STATE._loadedLabel||{});
   out.title=(STATE.labelTitle||'').trim();
-  if(STATE.labelStart)out.startDate=STATE.labelStart;else delete out.startDate;
-  if(STATE.labelEnd)  out.endDate  =STATE.labelEnd;  else delete out.endDate;
+  // Date inputs show only the date part of GHL's ISO timestamps. While the operator has not
+  // changed one, GHL's own value round-trips byte-for-byte; a deliberate edit stretches the
+  // chosen day to the documented full-ISO format (start of day / last instant of the day).
+  var loadedStart=STATE._loadedLabel?_dateForInput(STATE._loadedLabel.startDate):'';
+  var loadedEnd=STATE._loadedLabel?_dateForInput(STATE._loadedLabel.endDate):'';
+  if(STATE.labelStart){
+    out.startDate=(STATE._loadedLabel&&STATE._loadedLabel.startDate&&loadedStart===STATE.labelStart)
+      ?STATE._loadedLabel.startDate:_isoLabelDate(STATE.labelStart);
+  }else delete out.startDate;
+  if(STATE.labelEnd){
+    out.endDate=(STATE._loadedLabel&&STATE._loadedLabel.endDate&&loadedEnd===STATE.labelEnd)
+      ?STATE._loadedLabel.endDate:_isoLabelDate(STATE.labelEnd,true);
+  }else delete out.endDate;
   return out;
 }
 function setTrackInventory(track,silent){
@@ -2434,14 +2493,14 @@ function newProduct(){
   STATE.current=null;STATE.isNew=true;STATE.priceId=null;
   STATE._rawProd=null;STATE.collectionIdsAll=[];STATE.seoKeywords='';
   renderLoadWarnings([]);
-  _undoStack.length=0;_redoStack.length=0;
+  _undoStack.length=0;_redoStack.length=0;_loadSnap=null;
   clearForm();showEditor(true);updateTitle('New product');
   $('publish-status').textContent='New product \u2014 fill in and publish';
   enableButtons(true);setDirty(false);showEditorMobile();
 }
 function clearForm(){
-  STATE.brand='';STATE.model='';STATE.year='';STATE.mpn='';
-  STATE.customSlug='';STATE._prevAutoSlug='';STATE._priceDisplay='';
+  STATE.brand='';STATE.model='';STATE.year='';STATE.mpn='';STATE.customSlug='';STATE._prevAutoSlug='';STATE._priceDisplay='';
+  STATE.priceId=null;STATE._loadedPrice=null;STATE._collPicked=null;
   // The SKU is the feed ID of one specific product — never let it carry over.
   STATE.sku='';STATE._loadedSku='';STATE.skuEdited=false;STATE.skuLocked=false;
   // Same for the product label: it is per-product data owned by GHL.
@@ -2491,6 +2550,14 @@ function duplicateProduct(){
   STATE.current=null;STATE.isNew=true;STATE.priceId=null;
   STATE.images=[];STATE.featImg={url:'',uploadedUrl:'',mediaId:'',gmcAlt:'',type:'image',iptcKeywords:[]};
   STATE._rawProd=null;STATE.collectionIdsAll=[];STATE.seoKeywords='';
+  STATE._loadedPrice=null;STATE._collPicked=null;STATE._loadedLabel=null;
+  // Per-product GHL data must not ride along: the duplicate is a different product, so its
+  // store-card ribbon (label) and its inventory tracking start blank, exactly like a new one.
+  STATE.labelEnabled=false;STATE.labelTitle='';STATE.labelStart='';STATE.labelEnd='';STATE.labelTouched=false;
+  syncLabelInputs();setLabelEnabled(false,true);
+  STATE.trackInventory=false;STATE.stockQty=0;
+  setTrackInventory(false,true);
+  v('f-stock-qty','');
   Object.assign(STATE,snap);
   STATE.mpn='';STATE.customSlug='';STATE._prevAutoSlug='';
   // A duplicate is a different product, so it needs its own feed ID.
@@ -2821,6 +2888,7 @@ function maybeAutoCompat(){
     setDrive(inf,false);
     syncCompatFromFields();   // keep the table's Drive column in step
     autoName();autoSku();autoSeo();
+    markChange();             // the silent drive flip changed SEO/name — it is a real change
   }
   if((STATE.mpn||'').length<7)return;
   _compatT=setTimeout(function(){lookupCompat(true);},900);
@@ -3034,7 +3102,7 @@ function renderImageGrid(){
 function rmImg(i){
   var img=STATE.images[i];
   if(img&&img.objectUrl&&img.objectUrl.startsWith('blob:'))URL.revokeObjectURL(img.objectUrl);
-  STATE.images.splice(i,1);renderImageGrid();
+  STATE.images.splice(i,1);renderImageGrid();markChange();
 }
 
 // ── SEO ────────────────────────────────────────────────────────
@@ -3250,6 +3318,18 @@ async function publishProduct(){
   if(isNaN(price)||price<=0){
     toast('Price (GBP) is required','err');return;
   }
+  // API contract (2021-07-28 product docs): isLabelEnabled:true requires a non-empty label —
+  // "If this is true, label object cannot be empty", and label.title is a required field. Block
+  // it up front rather than letting GHL reject the call after the product record was saved.
+  if(STATE.labelEnabled&&!(STATE.labelTitle||'').trim()){
+    toast('Label is On but has no text \u2014 add it or switch the label Off','err');return;
+  }
+  // An existing product can only be published from a record that actually loaded: with
+  // STATE._rawProd missing, the payload carries none of the GHL-side fields the editor
+  // preserves, and would clobber the live product with a half-empty record.
+  if(!STATE.isNew&&STATE.current&&STATE.current.id&&!STATE._rawProd){
+    toast('This product never loaded from GHL \u2014 reload it, then publish','err');return;
+  }
   openModal('publish-modal');
   $('pub-title').textContent=STATE.isNew?'Publishing\u2026':'Updating\u2026';
   $('pub-sub').textContent='Please wait.';
@@ -3320,24 +3400,38 @@ async function publishProduct(){
   var productHtml=renderDescriptionFragment();
   var slug=STATE.customSlug||slugify(name);
   var collIds=(STATE.collectionIdsAll||[]).slice();
-  var primary=STATE.collectionId||findCollectionId(STATE.brand)||null;
+  // Respect an explicit "— none —": the brand fallback still auto-files products the operator
+  // never placed themselves, but it must never undo a deliberate removal (review F6).
+  var primary=STATE.collectionId||((STATE._collPicked==='none')?null:(findCollectionId(STATE.brand)||null));
   if(primary){
     collIds=collIds.filter(function(c){return c!==primary;});
     collIds.unshift(primary);
   }
   // GHL validates that every media entry carries its media-library id
+  // Raw entries first: each rebuilt media merges in the fields GHL owns that this editor has
+  // no UI for (priceIds per its stated schema, or anything else it starts returning), so a
+  // publish never silently drops them.
+  var rawMedias=(STATE._rawProd&&Array.isArray(STATE._rawProd.medias))?STATE._rawProd.medias:[];
+  function _mergeRawMedia(entry){
+    var src=null;
+    if(entry.id)src=rawMedias.find(function(m){return (m.id||m._id)===entry.id;});
+    if(!src&&entry.url)src=rawMedias.find(function(m){return m.url===entry.url;});
+    if(!src||typeof src!=='object')return entry;
+    var out=Object.assign({},src,entry);   // this editor's values win; GHL's extras ride along
+    delete out._id;                        // media-library identity rides on `id`
+    return out;
+  }
   var medias=[];
   var featMediaId=STATE.featImg.mediaId||mediaIdFromUrl(featUrl);
-  if(featUrl&&featMediaId)medias.push({id:featMediaId,url:featUrl,title:STATE.featImg.gmcAlt||buildGmcAlt(),type:STATE.featImg.type||'image',isFeatured:true});
+  if(featUrl&&featMediaId)medias.push(_mergeRawMedia({id:featMediaId,url:featUrl,title:STATE.featImg.gmcAlt||buildGmcAlt(),type:STATE.featImg.type||'image',isFeatured:true}));
   galleryImgs.forEach(function(im){
     if(im.uploadedUrl===featUrl)return;
     var mid=im.mediaId||mediaIdFromUrl(im.uploadedUrl);
     if(!mid){console.warn('[medias] skipped (no media id):',im.uploadedUrl);return;}
-    medias.push({id:mid,url:im.uploadedUrl,title:im.alt||buildGmcAlt(),type:im.type||'image',isFeatured:false});
+    medias.push(_mergeRawMedia({id:mid,url:im.uploadedUrl,title:im.alt||buildGmcAlt(),type:im.type||'image',isFeatured:false}));
   });
   // Never hand GHL an empty media list for a product that already has media —
   // that would clear the gallery. If nothing resolved, leave the field alone.
-  var rawMedias=(STATE._rawProd&&Array.isArray(STATE._rawProd.medias))?STATE._rawProd.medias:[];
   if(!medias.length&&rawMedias.length){
     console.warn('[medias] nothing resolved — keeping the '+rawMedias.length+' already in GHL');
     medias=null;
@@ -3359,6 +3453,9 @@ async function publishProduct(){
     description:productHtml,
     slug:(STATE.slugLocked&&raw.slug)?raw.slug:slug,
     availableInStore:STATE.availableInStore,
+    // Tags are edited in the UI but live on the product record in GHL; without this line the
+    // tag list never reached GHL and every edit silently reverted on the next load (review F4).
+    tags:(STATE.productTags||[]).slice(),
 
     seo:{
       title:STATE.seoTitle||gv('f-seo-title'),
@@ -3369,6 +3466,9 @@ async function publishProduct(){
   if(medias)productPayload.medias=medias;
   if(featUrl)productPayload.image=featUrl;
   if(collIds.length)productPayload.collectionIds=collIds;
+  else if(STATE.isNew||Array.isArray(raw.collectionIds))productPayload.collectionIds=[];
+  // (an explicit empty list is only sent when the loaded record proved it carries a
+  // collectionIds field — never as a guess that could wipe memberships GHL never showed us)
 
   // ── PRODUCT LABEL ──────────────────────────────────────────────
   // Send it back the way GHL holds it. The only route to isLabelEnabled:false is
@@ -3403,7 +3503,14 @@ async function publishProduct(){
     $('pub-close-btn').style.display='flex';
     return;
   }
-  STATE._rawProd=pRes.data.product||pRes.data||raw;
+  var respProd=pRes.data.product||pRes.data||raw;
+  STATE._rawProd=respProd;
+  // Adopt GHL's answer for collections: whatever the server normalised now IS the truth,
+  // so the next publish round-trips it instead of a stale local guess.
+  if(Array.isArray(respProd.collectionIds)){
+    STATE.collectionIdsAll=respProd.collectionIds.slice();
+    STATE.collectionId=STATE.collectionIdsAll[0]||null;
+  }
   setStep(3,'done','Push product to GHL store');
   setStep(4,'active','Price + stock');
 
@@ -3413,28 +3520,63 @@ async function publishProduct(){
   // Never resend the SKU on an update — it is the feed ID and GHL already has it.
   var sku=currentSku();
   var sendSku=STATE.isNew||!STATE._loadedSku||STATE.skuEdited;
-  var pricePayload={
+  // The payload starts from exactly what GHL sent for this price, so every field this editor
+  // does not manage (sku, compareAtPrice, meta, shippingOptions, allowOutOfStockPurchases…)
+  // round-trips untouched instead of being dropped or reset to defaults. The docs do not even
+  // promise `sku` on the LIST-price response, so building from named fields alone was a
+  // silent-overwrite risk (review F1).
+  var PRICE_SERVER_OWNED=['_id','id','createdAt','updatedAt','traceId','product','userId'];
+  var pricePayload={};
+  if(STATE._loadedPrice&&typeof STATE._loadedPrice==='object'&&!Array.isArray(STATE._loadedPrice)){
+    Object.keys(STATE._loadedPrice).forEach(function(k){
+      if(PRICE_SERVER_OWNED.indexOf(k)<0)pricePayload[k]=STATE._loadedPrice[k];
+    });
+  }
+  Object.assign(pricePayload,{
     name:name,
-    type:'one_time',
+    type:(STATE._loadedPrice&&STATE._loadedPrice.type)||'one_time',
     currency:'GBP',
     amount:price,
     locationId:LOC,
-    trackInventory:!!STATE.trackInventory,
-    allowOutOfStockPurchases:false
-  };
-  if(sendSku&&sku)pricePayload.sku=sku;
+    trackInventory:!!STATE.trackInventory
+  });
+  // A brand-new price record defaults to "stop selling when out of stock"; an existing one keeps
+  // whatever the operator chose in GHL, because this UI has no control for it.
+  if(pricePayload.allowOutOfStockPurchases===undefined)pricePayload.allowOutOfStockPurchases=false;
+  if(sendSku&&sku&&pricePayload.sku!==sku)pricePayload.sku=sku;
   if(STATE.trackInventory)pricePayload.availableQuantity=STATE.stockQty||0;
   var priceErr=null;
+  var _syncAfterPriceSave=function(prRes){
+    // Adopt the whole saved record so the NEXT publish round-trips exactly what GHL now holds:
+    // price id, sku / "feed ID" lock state, and any field this editor never touches.
+    var priceData=prRes&&(prRes.data&&(prRes.data.price||prRes.data));
+    if(!priceData||typeof priceData!=='object'||!Object.keys(priceData).length)return;
+    STATE.priceId=(priceData._id||priceData.id)||STATE.priceId||null;
+    STATE._loadedPrice=priceData;
+    if(typeof priceData.amount==='number')STATE._priceDisplay=String(priceData.amount);
+    var savedSku=priceData.sku||'';
+    var savedTrack=typeof priceData.trackInventory==='boolean'?priceData.trackInventory:STATE.trackInventory;
+    STATE.trackInventory=savedTrack;
+    if(typeof priceData.availableQuantity==='number')STATE.stockQty=priceData.availableQuantity;
+    if(savedSku){
+      STATE.sku=savedSku;STATE._loadedSku=savedSku;STATE.skuEdited=false;
+      if(!STATE.isNew)STATE.skuLocked=true;
+      syncSkuLockUi();
+    }
+    updateStockBadge();
+  };
   try{
     var prRes;
     if(STATE.priceId){
       prRes=await ghlFetch('PUT','/products/'+productId+'/price/'+STATE.priceId,pricePayload);
       if(!prRes.ok){priceErr=prRes;}
+      else{_syncAfterPriceSave(prRes);}
     } else {
       prRes=await ghlFetch('POST','/products/'+productId+'/price',pricePayload);
       if(prRes.ok){
         var priceData=prRes.data&&(prRes.data.price||prRes.data);
         STATE.priceId=(priceData&&(priceData._id||priceData.id))||null;
+        _syncAfterPriceSave(prRes);
       }else{priceErr=prRes;}
     }
   }catch(pe){priceErr={status:0,data:{error:String(pe)}};}
@@ -3561,7 +3703,9 @@ function _applySnap(snap){
     _deliveryId=0;
     STATE.deliveryRows.forEach(function(r){r.id=++_deliveryId;});
     repopulateForm();
-    setDirty(true);
+    // Dirty reflects reality: restoring the exact load-time snapshot means "clean", anything
+    // else is an uncommitted change.
+    setDirty(!_loadSnap||snap!==_loadSnap);
     enableButtons(true);
     var bU=$('btn-undo'),bR=$('btn-redo');
     if(bU)bU.disabled=_undoStack.length<2;
